@@ -1,0 +1,9 @@
+# Raw data (1.6 GB, fetched by download script)
+data/raw/
+
+# Python virtual environment
+mergemap/
+
+# Python cache
+__pycache__/
+*.pyc
