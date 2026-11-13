@@ -210,15 +210,29 @@ Family list change (Nov 12, before any result was reported): the first run count
 
 ## Phase 4: RQ2, mixing (Nov 17–19)
 
-- [ ] **Own implementation:** cocitation network of merge parents from the bipartite merge-child-to-parent table (A·Aᵀ restricted to merge edges), weighted by count. A merge with k parents adds k(k−1)/2 links.
-- [ ] Family-to-family merge matrix as a heatmap.
-- [ ] Family assortativity on the cocitation network with `assortativity_nominal`. Report modularity Q of the family partition next to it.
-- [ ] Cocitation network versus G(n,m) with the same n and m: clustering coefficient, giant-component fraction, mean path length, each against the lecture formula and against about 100 sampled random graphs.
-- [ ] **Own implementation:** inbreeding search. For a merge with parents A and B:
+Done Nov 12 by `src/rq2.py` and `src/inbreeding.py` (figures `figures/rq2_*.png`, numbers `data/processed/rq2_summary.json`). The run takes about 4 minutes, almost all of it the 100 random graphs.
+
+Inbreeding definition as implemented (`src/inbreeding.py`): a model's closed neighbourhood within d generations is the model plus its ancestors up to d steps. Two parents are related within d if these neighbourhoods share a model. So d = 1 covers parent-child and siblings, d = 2 grandparents and first cousins, d = 3 one step further, and "any" means any shared ancestor. A merge is inbred within d if at least one pair of its parents is related within d. Each merge is classified by its closest pair: "ancestor type" if one parent is an ancestor of the other, otherwise "common ancestor".
+
+Results:
+
+- **Cocitation network:** 10,125 parents, 47,300 links, total weight 112,141, mean degree 9.3. Strongest pair: `Mistral-7B-Instruct-v0.2` + `Mistral-7B-v0.1`, cocited by 247 merges.
+- **Family assortativity:** r = 0.74 with `unknown` and `mixed` as labels (Q = 0.56); r = 0.99 among parents with a named family (Q = 0.68). The own formula and igraph agree (0.751 unweighted).
+- **Family matrix:** 80.6% of cocited pairs have the same label. Named-to-named cross-family pairs are tiny: mistral + llama 89, llama + qwen 69, against 27,010 mistral + mistral. The largest off-diagonal cell is mistral + unknown (15,419), which suggests most unknown parents are Mistral-based.
+- **Versus G(n,m)** (n = 10,125, m = 47,300, c = 9.34): clustering 0.58 against 0.0009; giant-component fraction 0.62 against 1.00; mean path length 6.39 against 4.13 (theory) and 4.38 (sampled). The network is far more clustered and more fragmented than a random graph. High clustering is partly built in: a merge with k parents adds a clique of k nodes.
+- **Inbreeding:** 32.6% of merges have a related pair within 1 generation, 42.0% within 2, 45.9% within 3, 48.7% at any depth. At depth 1, 19.1% are ancestor type and 13.5% common-ancestor type. The other 51.3% of merges have no declared shared ancestry at all.
+- **One merge per (author, parent set):** 10,993 of 15,046 merges remain. 1,840 authors; the 10 most active made 32.5% of merges. Assortativity is unchanged (0.73 and 0.99). Inbreeding rises slightly (35.1% within 1, 53.8% at any depth), so repeat merges by prolific authors are not what drives it.
+- Whether these rates are high is not known until the Phase 7 baselines.
+
+- [x] **Own implementation:** cocitation network of merge parents from the bipartite merge-child-to-parent table (A·Aᵀ restricted to merge edges), weighted by count. A merge with k parents adds k(k−1)/2 links.
+- [x] Family-to-family merge matrix as a heatmap.
+- [x] Family assortativity on the cocitation network with `assortativity_nominal`. Report modularity Q of the family partition next to it.
+- [x] Cocitation network versus G(n,m) with the same n and m: clustering coefficient, giant-component fraction, mean path length, each against the lecture formula and against about 100 sampled random graphs.
+- [x] **Own implementation:** inbreeding search. For a merge with parents A and B:
   - depth 0: A is an ancestor of B, or B of A (count separately);
   - depth 1–3: A and B share an ancestor within 1, 2 or 3 generations.
   - BFS along child → parent edges, capped at depth 3. Report a rate per depth.
-- [ ] Repeat the main numbers with one merge counted per (author, parent set).
+- [x] Repeat the main numbers with one merge counted per (author, parent set).
 
 ## Phase 5: RQ3, hubs and bridges (Nov 19–21)
 

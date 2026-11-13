@@ -40,6 +40,22 @@ def load_graph(with_merges: bool = True):
     return g, nodes
 
 
+def load_lineage():
+    """Return (node table, parents_of, merges) as plain Python structures.
+
+    parents_of : {node index: [parent node indices]}, for every node with a parent
+    merges     : node indices of merge models with 2 or more parents
+    """
+    nodes = pl.read_parquet(GRAPH_NODES).sort("node")
+    edges = pl.read_parquet(EDGES)
+    index = dict(zip(nodes["_id"], nodes["node"]))
+    parents_of = {}
+    for c, p in zip(edges["child_id"], edges["parent_id"]):
+        parents_of.setdefault(index[c], []).append(index[p])
+    merges = nodes.filter((pl.col("relation") == "merge") & (pl.col("n_parents") >= 2))["node"].to_list()
+    return nodes, parents_of, merges
+
+
 if __name__ == "__main__":
     for flag in (True, False):
         g, nodes = load_graph(with_merges=flag)

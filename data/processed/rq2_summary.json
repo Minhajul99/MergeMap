@@ -1,0 +1,132 @@
+{
+  "cocitation": {
+    "nodes": 10125,
+    "edges": 47300,
+    "total_weight": 112141,
+    "mean_degree": 9.34320987654321,
+    "max_weight": 247
+  },
+  "mixing": {
+    "all_labels_weighted": {
+      "assortativity": 0.7430228783767087,
+      "modularity_Q": 0.5609992412498763,
+      "links": 47300
+    },
+    "all_labels_unweighted": {
+      "assortativity": 0.7507656822094487,
+      "modularity_Q": 0.5741816825266279,
+      "links": 47300
+    },
+    "named_only_weighted": {
+      "assortativity": 0.9875349257629492,
+      "modularity_Q": 0.6783275709661907,
+      "links": 34109
+    },
+    "named_only_unweighted": {
+      "assortativity": 0.9787976655419652,
+      "modularity_Q": 0.6848426098277761,
+      "links": 34109
+    },
+    "igraph_check_unweighted": {
+      "assortativity": 0.7507656822094485,
+      "modularity_Q": 0.574181682526628
+    }
+  },
+  "versus_random_graph": {
+    "n": 10125,
+    "m": 47300,
+    "mean_degree_c": 9.34320987654321,
+    "observed": {
+      "clustering": 0.581482443205213,
+      "giant_fraction": 0.6169876543209877,
+      "mean_path_length": 6.39146142053405
+    },
+    "gnm_theory": {
+      "clustering": 0.0009228773090224426,
+      "giant_fraction": 0.9999123703488916,
+      "mean_path_length": 4.127162399985132
+    },
+    "gnm_sample_mean": {
+      "clustering": 0.000936011370762895,
+      "giant_fraction": 0.9999041975308641,
+      "mean_path_length": 4.383168504074265
+    },
+    "gnm_sample_sd": {
+      "clustering": 8.201101785170264e-05,
+      "giant_fraction": 9.519983554450131e-05,
+      "mean_path_length": 0.0012581946908383182
+    },
+    "samples": 100
+  },
+  "inbreeding": {
+    "1": {
+      "ancestor": 0.19121361159112057,
+      "common_ancestor": 0.13505250564934201,
+      "total": 0.32626611724046256
+    },
+    "2": {
+      "ancestor": 0.21381097966236873,
+      "common_ancestor": 0.2063671407683105,
+      "total": 0.42017812043067926
+    },
+    "3": {
+      "ancestor": 0.22225176126545262,
+      "common_ancestor": 0.23687358766449554,
+      "total": 0.45912534892994816
+    },
+    "any": {
+      "ancestor": 0.22810049182506978,
+      "common_ancestor": 0.25927156719393857,
+      "total": 0.4873720590190084
+    }
+  },
+  "deduplicated": {
+    "merges_kept": 10993,
+    "authors": 1840,
+    "top10_author_share": 0.32526917453143694,
+    "mixing": {
+      "all_labels_weighted": {
+        "assortativity": 0.7339571895446095,
+        "modularity_Q": 0.5515384847468237,
+        "links": 47300
+      },
+      "all_labels_unweighted": {
+        "assortativity": 0.7507656822094487,
+        "modularity_Q": 0.5741816825266279,
+        "links": 47300
+      },
+      "named_only_weighted": {
+        "assortativity": 0.9858696407138375,
+        "modularity_Q": 0.6778876824826598,
+        "links": 34109
+      },
+      "named_only_unweighted": {
+        "assortativity": 0.9787976655419652,
+        "modularity_Q": 0.6848426098277761,
+        "links": 34109
+      }
+    },
+    "inbreeding": {
+      "1": {
+        "ancestor": 0.2037660329300464,
+        "common_ancestor": 0.1472755389793505,
+        "total": 0.3510415719093969
+      },
+      "2": {
+        "ancestor": 0.22850905121440918,
+        "common_ancestor": 0.23169289547894115,
+        "total": 0.4602019466933503
+      },
+      "3": {
+        "ancestor": 0.23787865005003184,
+        "common_ancestor": 0.26826162103156553,
+        "total": 0.5061402710815974
+      },
+      "any": {
+        "ancestor": 0.24370053670517602,
+        "common_ancestor": 0.2947330119166742,
+        "total": 0.5384335486218502
+      }
+    }
+  }
+}
