@@ -151,16 +151,37 @@ Done Nov 12 by `src/build_edges.py`. Output: `data/processed/nodes.parquet` (3,1
 
 ## Phase 2: Graph model (Nov 13–15) — workflow step 2
 
+Done Nov 12.
+
+- `src/build_graph.py` writes `data/processed/graph_nodes.parquet`, one row per node: depth, roots, family, parent and child counts.
+- `src/families.py` holds the frozen family pattern list (42 families, matched on the repo name after `owner/`).
+- `src/graph_io.py` has `load_graph(with_merges=True/False)`. It rebuilds `G_full` or `G_nomerge` in igraph from the two parquet files in about a second, so no pickled graphs are saved.
+- One-parent merges are not a separate flag: they are the rows with `relation == "merge"` and `n_parents == 1`.
+
+Results:
+
+- 942,088 nodes, 929,941 edges, no cycles (own topological sort and igraph `is_dag()` agree).
+- 44,867 roots. Deepest lineage: 151 generations. 632,360 nodes are at depth 1.
+- `G_full`: 41,637 weak components, largest 418,549. `G_nomerge`: 881,911 edges, 60,177 components, largest 43,660.
+- **Family coverage:** 47.8% of roots get a named family, but they are the large ones: 85.7% of non-root models get a named family or `mixed`, and 14.3% are `unknown`.
+- **Weak spot: 23.3% of distinct merge parents are `unknown`** (2,360 of 10,125). The largest unknown roots are models with names like `Marcoro14-7B-slerp` that declare no base model and cannot be identified by name. Report family-level results with and without `unknown`, and root-level results first.
+- 1,005 non-root models are `mixed`. 12,293 models have a named family but also at least one unknown root (`has_unknown_root`).
+
 - [x] Drop self-loops and duplicate edges. Log counts.
 - [x] Keep missing parents as ghost nodes. Log count.
 - [x] Drop edges where the parent is strictly newer than the child (ghost parents have no date and are kept). Log count; expect about 3,430.
 - [x] Nodes are models that appear in at least one edge.
-- [ ] Directed graph, edges child → parent.
-- [ ] **Own implementation:** cycle check and topological order, reusing the Assignment 2 topological sort. Break and log any cycles.
-- [ ] Flag the 200 merges with one known parent: reach only.
-- [ ] Family labels: roots are nodes with out-degree 0. Fixed regex list of named families; the rest `unknown`. A node takes the families of all its roots; more than one named family is `mixed`. Freeze the list.
-- [ ] Save `G_full` and `G_nomerge`, and the edge list as parquet (the file to submit).
-- [ ] Sanity check: relation shares against Laufer et al. [1].
+- [x] Directed graph, edges child → parent.
+- [x] **Own implementation:** cycle check and topological order, reusing the Assignment 2 topological sort. Break and log any cycles.
+- [x] Flag the 200 merges with one known parent: reach only.
+- [x] Family labels: roots are nodes with out-degree 0. Fixed regex list of named families; the rest `unknown`. A node takes the families of all its roots; more than one named family is `mixed`. Freeze the list.
+- [x] Save `G_full` and `G_nomerge`, and the edge list as parquet (the file to submit).
+- [x] Sanity check against Laufer et al. [1] (done Nov 12; the paper gives no relation-type shares, so four other stated facts were compared):
+  - Finetune edges: the paper counts 191,072 in its 1.86-million-model snapshot. Our graph, cut at the date our dump reaches 1.86 million models (2025-08-22), has 191,155. Difference 0.04%. The cut date is approximate, because deleted models are missing from our dump.
+  - Model with the most children: `black-forest-labs/FLUX.1-dev` in both.
+  - Depth: the paper reports "nearly 40 generations" using the first-listed parent for merges. Ours is 39 under the same rule. With all merge parents it is 151.
+  - Without merges no model has more than one parent, and `createdAt` is back-filled to 2022-03-02: both hold in our data.
+  - The reference itself is confirmed: title, authors and arXiv number match.
 
 ## Phase 3: RQ1, structure (Nov 16–17)
 
