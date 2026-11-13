@@ -41,7 +41,8 @@ FAMILY_PATTERNS = [
     ("solar", L + r"solar" + R),
     ("olmo", L + r"olmo" + R),
     ("lfm", L + r"lfm[0-9]"),
-    ("nemotron", r"nemotron"),
+    # "nemotron" is deliberately absent: NVIDIA uses the name both for its own
+    # models and for Llama fine-tunes, so the name alone does not give a family.
     ("glm", L + r"glm" + R),
     ("granite", r"granite"),
     ("pythia", r"pythia"),
@@ -60,7 +61,7 @@ FAMILY_PATTERNS = [
     # --- encoders and sequence-to-sequence models ---
     ("t5", L + r"(flan-?t5|mt5|byt5|t5)" + R),
     ("roberta", r"roberta"),
-    ("bert", r"bert"),
+    ("bert", r"berta?(?![a-z])"),                             # not "cybertron", "liberty"
     ("bart", L + r"m?bart" + R),
     ("e5", L + r"e5" + R),
     ("bge", L + r"bge" + R),

@@ -1,0 +1,219 @@
+{
+  "children": {
+    "nodes": 942088,
+    "nodes_with_children": 87535,
+    "share_with_children": 0.09291594840397076,
+    "max_children": 43421,
+    "mean_children_all_nodes": 0.9871063000484032,
+    "alpha_from_cumulative_slope": 1.9232326603709171,
+    "fit_range": [
+      10,
+      7291
+    ],
+    "alpha_powerlaw_package": 1.8648351295432548
+  },
+  "children_by_relation": {
+    "finetune": {
+      "edges": 358180,
+      "parents": 29801,
+      "max_children": 12761,
+      "alpha": 1.8767032874038148
+    },
+    "adapter": {
+      "edges": 332026,
+      "parents": 8644,
+      "max_children": 42702,
+      "alpha": 1.8903611455685776
+    },
+    "quantized": {
+      "edges": 191705,
+      "parents": 60822,
+      "max_children": 1529,
+      "alpha": 2.202273515541353
+    },
+    "merge": {
+      "edges": 48030,
+      "parents": 10187,
+      "max_children": 412,
+      "alpha": 2.5960736772932087
+    }
+  },
+  "top_heavy_share": {
+    "top_0.01%": {
+      "models": 94,
+      "edge_share": 0.42052990458534467
+    },
+    "top_0.1%": {
+      "models": 942,
+      "edge_share": 0.6896781623780434
+    },
+    "top_1%": {
+      "models": 9421,
+      "edge_share": 0.848416189844302
+    },
+    "top_5%": {
+      "models": 47104,
+      "edge_share": 0.9565230482363934
+    },
+    "top_10%": {
+      "models": 94209,
+      "edge_share": 1.0
+    }
+  },
+  "top_heavy_share_among_parents": {
+    "top_1%": {
+      "models": 875,
+      "edge_share": 0.6828992376935741
+    },
+    "top_5%": {
+      "models": 4377,
+      "edge_share": 0.8006217598750889
+    },
+    "top_10%": {
+      "models": 8754,
+      "edge_share": 0.8440417187757073
+    },
+    "top_20%": {
+      "models": 17507,
+      "edge_share": 0.8874240408800128
+    }
+  },
+  "merges": {
+    "merge_models": 15310,
+    "merges_with_2plus_parents": 15046,
+    "mean_parents": 3.1746643626212947,
+    "max_parents": 97,
+    "non_merge_models_with_2plus_parents": 0
+  },
+  "components_full": {
+    "components": 41637,
+    "largest": 418549,
+    "largest_share_of_nodes": 0.44427802922869203,
+    "top5_sizes": [
+      418549,
+      63232,
+      25428,
+      21870,
+      13644
+    ],
+    "components_joining_2plus_named_families": 12,
+    "named_families_in_largest": [
+      "bart",
+      "bert",
+      "clip",
+      "deepseek",
+      "flux",
+      "gemma",
+      "glm",
+      "gpt-oss",
+      "gpt2",
+      "granite",
+      "hunyuan",
+      "krea",
+      "lfm",
+      "llama",
+      "mistral",
+      "opt",
+      "phi",
+      "pythia",
+      "qwen",
+      "roberta",
+      "smollm",
+      "solar",
+      "stable-diffusion",
+      "t5",
+      "vit",
+      "wav2vec2",
+      "whisper",
+      "z-image"
+    ],
+    "roots_in_largest": 2448
+  },
+  "components_nomerge": {
+    "components": 60177,
+    "largest": 43660,
+    "largest_share_of_nodes": 0.04634386596581211,
+    "top5_sizes": [
+      43660,
+      32561,
+      30653,
+      24096,
+      21459
+    ],
+    "components_joining_2plus_named_families": 0,
+    "named_families_in_largest": [
+      "flux"
+    ],
+    "roots_in_largest": 1
+  },
+  "depth_full": {
+    "max": 151,
+    "mean_non_root": 1.6192041871512146,
+    "share_depth_1": 0.7047984833168194,
+    "share_depth_5plus": 0.028559295870248243,
+    "nodes_depth_10plus": 6917
+  },
+  "depth_nomerge": {
+    "max": 39,
+    "mean_non_root": 1.388675274489149,
+    "share_depth_1": 0.7329435736712662,
+    "share_depth_5plus": 0.012531876799359572,
+    "nodes_depth_10plus": 185
+  },
+  "depth_of_merges": {
+    "mean": 6.427106466361855,
+    "median": 3.0
+  },
+  "merge_mixing": {
+    "merges": 15046,
+    "cross_root": 12869,
+    "cross_root_share": 0.8553103814967433,
+    "cross_family": 203,
+    "same_family": 6852,
+    "undetermined": 7991,
+    "cross_family_share_of_all": 0.013491957995480527,
+    "cross_family_share_of_determined": 0.02877391920623671,
+    "top_cross_family_combinations": [
+      [
+        "llama + mistral",
+        82
+      ],
+      [
+        "gemma + qwen",
+        12
+      ],
+      [
+        "gemma + llama",
+        7
+      ],
+      [
+        "gemma + mistral",
+        5
+      ],
+      [
+        "granite + mistral + solar",
+        5
+      ],
+      [
+        "mistral + solar",
+        5
+      ],
+      [
+        "llama + qwen",
+        5
+      ],
+      [
+        "llama + phi",
+        4
+      ],
+      [
+        "deepseek + qwen",
+        4
+      ],
+      [
+        "qwen + tinyllama",
+        4
+      ]
+    ]
+  }
+}

@@ -154,7 +154,7 @@ Done Nov 12 by `src/build_edges.py`. Output: `data/processed/nodes.parquet` (3,1
 Done Nov 12.
 
 - `src/build_graph.py` writes `data/processed/graph_nodes.parquet`, one row per node: depth, roots, family, parent and child counts.
-- `src/families.py` holds the frozen family pattern list (42 families, matched on the repo name after `owner/`).
+- `src/families.py` holds the frozen family pattern list (41 families, matched on the repo name after `owner/`).
 - `src/graph_io.py` has `load_graph(with_merges=True/False)`. It rebuilds `G_full` or `G_nomerge` in igraph from the two parquet files in about a second, so no pickled graphs are saved.
 - One-parent merges are not a separate flag: they are the rows with `relation == "merge"` and `n_parents == 1`.
 
@@ -185,12 +185,28 @@ Results:
 
 ## Phase 3: RQ1, structure (Nov 16–17)
 
-- [ ] Distribution of children per model: log-binned histogram and cumulative distribution on log-log axes; exponent from the cumulative slope. Overall and per relation type.
-- [ ] Top-heavy share: share of edges held by the top 1%, 5%, 10% of models (Lorenz curve).
-- [ ] Parent-count table for merges (no fit).
-- [ ] Weakly connected components with and without merge edges: count, largest size, number of named families joined in one component.
-- [ ] Lineage depth from the topological order: distribution, with and without merges.
-- [ ] Share of merges that are cross-family, with and without `unknown`.
+Done Nov 12 by `src/rq1.py` (figures in `figures/rq1_*.png`, numbers in `data/processed/rq1_summary.json`). `src/plotstyle.py` sets the look of every figure.
+
+Results:
+
+- **Children per model:** only 87,535 models (9.3%) have any child. The largest has 43,421. Power-law exponent from the cumulative slope: alpha = 1.92 for 10 ≤ k ≤ 7,291 (the `powerlaw` package gives 1.86). By relation: finetune 1.88, adapter 1.89, quantized 2.20, merge 2.60. The merge curve bends, so its exponent is a rough summary, not a clean power law.
+- **Top-heavy share:** the top 94 models (0.01%) hold 42.1% of all edges; the top 942 hold 69.0%. Among models with at least one child, the top 1% hold 68.3%.
+- **Merges:** 15,046 with 2 or more parents, 3.17 parents on average, 97 at most.
+- **Components:** 60,177 without merge edges, largest 43,660 (4.6% of nodes). 41,637 with merge edges, largest 418,549 (44.4%). The largest component contains 2,448 roots and 28 named families.
+- **Caveat on the largest component:** a single merge edge is enough to join two trees. Only 10 merges connect the FLUX.1-dev tree (43,000 models) to any other root; 8 of them join it to FLUX.1-schnell, and about 3 list it next to Qwen or Llama models, which is what puts it in the same component as the language models. Component size overstates how strongly families are connected; RQ2 and RQ3 measure that.
+- **Depth:** maximum 39 without merges, 151 with. Nodes at depth 10 or more: 185 without, 6,917 with. Merge models sit at mean depth 6.4.
+- **Root level:** in 85.5% of merges the parents trace back to different roots.
+- **Family level:** same family 6,852 (45.5%), cross-family 203 (1.3%), undetermined 7,991 (53.1%, an unknown root is involved). Among merges with known families, 2.9% are cross-family. Most common: llama + mistral (82).
+- **Reading:** merges mostly join different base models of the same family, not different families. More than half of merges cannot be classified, so this is a statement about the classified half.
+
+Family list change (Nov 12, before any result was reported): the first run counted 433 cross-family merges. 230 of them came from two wrong patterns: `bert` matched `una-cybertron-7b`, and `nemotron` labelled Llama fine-tunes as a separate family. `bert` now needs a word end, and `nemotron` was removed. The list has 41 families. The family-level result is sensitive to the list; say so in the report.
+
+- [x] Distribution of children per model: log-binned histogram and cumulative distribution on log-log axes; exponent from the cumulative slope. Overall and per relation type.
+- [x] Top-heavy share: share of edges held by the top 1%, 5%, 10% of models (Lorenz curve).
+- [x] Parent-count table for merges (no fit).
+- [x] Weakly connected components with and without merge edges: count, largest size, number of named families joined in one component.
+- [x] Lineage depth from the topological order: distribution, with and without merges.
+- [x] Share of merges that are cross-family, with and without `unknown`.
 
 ## Phase 4: RQ2, mixing (Nov 17–19)
 
