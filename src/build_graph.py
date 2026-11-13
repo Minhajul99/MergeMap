@@ -174,7 +174,7 @@ table = pl.DataFrame(
     schema_overrides={"roots": pl.List(pl.Int32), "families": pl.List(pl.String)},
 ).join(
     node_info.select("_id", "author", "createdAt", "downloads", "likes"), on="_id", how="left"
-)
+).sort("node")      # a join does not promise to keep row order
 table.write_parquet(OUT)
 print(f"saved {OUT}")
 

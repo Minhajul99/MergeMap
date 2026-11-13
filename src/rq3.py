@@ -33,6 +33,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 
 from graph_io import load_graph
+from pagerank_dag import pagerank_on_dag
 from pagerank_matrix import pagerank as pagerank_by_inverse
 from plotstyle import INK_SECONDARY, SERIES, apply_style, save
 
@@ -59,26 +60,7 @@ print(f"G_full: {n:,} nodes, {g.ecount():,} edges")
 # ---------------------------------------------------------------------------
 # 1. Hubs: children and PageRank
 # ---------------------------------------------------------------------------
-def pagerank_on_dag(graph, depth, alpha, beta):
-    """PageRank x = alpha * A D^-1 x + beta * 1, solved exactly in one pass.
-
-    A model passes the share alpha of its score to its parents, split equally
-    among them. The graph is acyclic, so if every child is handled before its
-    parents, each score is final when it is passed on. Children always have a
-    larger depth than their parents, so "deepest first" is such an order.
-    """
-    x = np.full(graph.vcount(), beta, dtype=float)
-    parents = graph.get_adjlist(mode="out")
-    for v in np.argsort(-depth, kind="stable"):
-        ps = parents[v]
-        if ps:
-            share = alpha * x[v] / len(ps)
-            for p in ps:
-                x[p] += share
-    return x
-
-
-pr = pagerank_on_dag(g, depth, ALPHA, BETA)
+pr = pagerank_on_dag(g, depth, ALPHA, BETA)     # own code, see pagerank_dag.py
 
 # Check 1: the Assignment 3 code on one small component that contains merges.
 components = g.connected_components(mode="weak")
@@ -135,8 +117,11 @@ for row in top_pagerank.iter_rows(named=True):
 top_c = set(np.argsort(-children)[:TOP])
 top_p = set(np.argsort(-pr)[:TOP])
 has_children = children >= 1
-rank_children = np.argsort(np.argsort(-children[has_children]))
-rank_pagerank = np.argsort(np.argsort(-pr[has_children]))
+# Spearman correlation = Pearson correlation of the ranks. Most models have
+# exactly 1 or 2 children, so tied values must share their average rank;
+# otherwise the result depends on the order the models happen to be stored in.
+rank_children = pl.Series(children[has_children]).rank("average").to_numpy()
+rank_pagerank = pl.Series(pr[has_children]).rank("average").to_numpy()
 spearman = float(np.corrcoef(rank_children, rank_pagerank)[0, 1])
 family_in_top_pr = Counter(family[v] for v in np.argsort(-pr)[:100])
 summary["hubs"] = {
@@ -279,52 +264,89 @@ print(f"    of the top 100, {multi_family_bridges} have cocitation neighbours in
 # ---------------------------------------------------------------------------
 # 4. Communities of the cocitation network versus family labels
 # ---------------------------------------------------------------------------
-partition = leidenalg.find_partition(cg, leidenalg.ModularityVertexPartition, weights="weight", seed=SEED)
-community = np.array(partition.membership)
-q_leiden = cg.modularity(community, weights="weight")
+# Modularity maximisation is a heuristic search (Topic 5-3): different random
+# starts give different, equally good partitions. So Leiden is run RUNS times
+# with seeds 0 .. RUNS-1. The partition with the highest Q is reported in the
+# table, and every summary number is also given as a min-max over all runs,
+# so that no result rests on one lucky start.
+RUNS = 20
+
+
+def describe(membership):
+    """Community table and summary numbers for one partition."""
+    membership = np.asarray(membership)
+    rows = []
+    pure_named = total_named = unknown_total = unknown_in_clear = 0
+    for c in range(membership.max() + 1):
+        inside = np.flatnonzero(membership == c)
+        labels = Counter(c_family[i] for i in inside)
+        named = Counter({f: k for f, k in labels.items() if f not in ("unknown", "mixed")})
+        named_total = sum(named.values())
+        dominant, dominant_count = named.most_common(1)[0] if named else ("-", 0)
+        purity = dominant_count / named_total if named_total else float("nan")
+        total_named += named_total
+        pure_named += dominant_count
+        unknown_total += labels["unknown"]
+        # A community is "clear" if it has at least 10 named members and 90% of them agree.
+        if named_total >= 10 and purity >= 0.9:
+            unknown_in_clear += labels["unknown"]
+        rows.append({
+            "community": c, "size": len(inside), "dominant_family": dominant,
+            "purity_among_named": purity, "named": named_total,
+            "unknown": labels["unknown"], "mixed": labels["mixed"],
+        })
+    table = pl.DataFrame(rows).sort(["size", "community"], descending=[True, False])
+    stats = {
+        "communities": int(membership.max() + 1),
+        "communities_with_10plus_members": int((table["size"] >= 10).sum()),
+        "modularity": float(cg.modularity(membership, weights="weight")),
+        "purity_among_named": pure_named / total_named,
+        "unknown_parents": unknown_total,
+        "unknown_in_clear_communities": unknown_in_clear,
+        "unknown_in_clear_share": unknown_in_clear / unknown_total,
+    }
+    return table, stats
+
+
+runs = []
+for seed in range(RUNS):
+    partition = leidenalg.find_partition(
+        cg, leidenalg.ModularityVertexPartition, weights="weight", seed=seed, n_iterations=-1
+    )
+    runs.append((partition.membership, describe(partition.membership)))
+
+best_membership, (table, best) = max(runs, key=lambda run: run[1][1]["modularity"])
+table.write_csv(f"{OUT}/rq3_communities.csv")
 label_ids = {f: i for i, f in enumerate(sorted(set(c_family)))}
 q_family = cg.modularity([label_ids[f] for f in c_family], weights="weight")
 
-rows = []
-pure_named = total_named = 0
-unknown_total = unknown_in_clear = 0
-for c in range(len(partition)):
-    inside = np.flatnonzero(community == c)
-    labels = Counter(c_family[i] for i in inside)
-    named = Counter({f: k for f, k in labels.items() if f not in ("unknown", "mixed")})
-    named_total = sum(named.values())
-    dominant, dominant_count = named.most_common(1)[0] if named else ("-", 0)
-    purity = dominant_count / named_total if named_total else float("nan")
-    total_named += named_total
-    pure_named += dominant_count
-    unknown_total += labels["unknown"]
-    # A community is "clear" if it has at least 10 named members and 90% of them agree.
-    if named_total >= 10 and purity >= 0.9:
-        unknown_in_clear += labels["unknown"]
-    rows.append({
-        "community": c, "size": len(inside), "dominant_family": dominant,
-        "purity_among_named": purity, "named": named_total,
-        "unknown": labels["unknown"], "mixed": labels["mixed"],
-    })
-table = pl.DataFrame(rows).sort("size", descending=True)
-table.write_csv(f"{OUT}/rq3_communities.csv")
+
+def spread(key):
+    values = [stats[key] for _, (_, stats) in runs]
+    return {"min": min(values), "max": max(values)}
+
 
 summary["communities"] = {
-    "communities": len(partition),
-    "communities_with_10plus_members": int((table["size"] >= 10).sum()),
-    "modularity_leiden": float(q_leiden),
+    "runs": RUNS,
+    "best_run": best,
+    "range_over_runs": {key: spread(key) for key in best if key != "unknown_parents"},
     "modularity_family_labels": float(q_family),
-    "overall_purity_among_named": pure_named / total_named,
-    "unknown_parents": unknown_total,
-    "unknown_parents_in_clear_communities": unknown_in_clear,
 }
-print(f"\n[4] Leiden communities on the cocitation network: {len(partition):,} "
-      f"({(table['size'] >= 10).sum()} with 10+ members)")
-print(f"    modularity Q: Leiden {q_leiden:.3f}, family labels {q_family:.3f}")
+r = summary["communities"]["range_over_runs"]
+print(f"\n[4] Leiden communities on the cocitation network, best of {RUNS} runs "
+      f"(min-max over all runs in brackets)")
+print(f"    communities: {best['communities']:,} [{r['communities']['min']:,}-{r['communities']['max']:,}], "
+      f"with 10+ members: {best['communities_with_10plus_members']} "
+      f"[{r['communities_with_10plus_members']['min']}-{r['communities_with_10plus_members']['max']}]")
+print(f"    modularity Q: Leiden {best['modularity']:.3f} "
+      f"[{r['modularity']['min']:.3f}-{r['modularity']['max']:.3f}], family labels {q_family:.3f}")
 print(f"    named parents that sit in their community's dominant family: "
-      f"{100 * pure_named / total_named:.1f}%")
-print(f"    unknown parents inside a clearly single-family community: {unknown_in_clear:,} of {unknown_total:,} "
-      f"({100 * unknown_in_clear / unknown_total:.1f}%)")
+      f"{100 * best['purity_among_named']:.1f}% "
+      f"[{100 * r['purity_among_named']['min']:.1f}-{100 * r['purity_among_named']['max']:.1f}%]")
+print(f"    unknown parents inside a clearly single-family community: "
+      f"{best['unknown_in_clear_communities']:,} of {best['unknown_parents']:,} "
+      f"({100 * best['unknown_in_clear_share']:.1f}%) "
+      f"[{100 * r['unknown_in_clear_share']['min']:.1f}-{100 * r['unknown_in_clear_share']['max']:.1f}%]")
 print("    largest communities:")
 print(f"      {'size':>6}  {'dominant':<10}{'purity':>7}{'named':>7}{'unknown':>9}{'mixed':>7}")
 for row in table.head(12).iter_rows(named=True):

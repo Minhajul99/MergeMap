@@ -187,15 +187,11 @@
         7
       ],
       [
-        "gemma + mistral",
-        5
-      ],
-      [
-        "granite + mistral + solar",
-        5
-      ],
-      [
         "mistral + solar",
+        5
+      ],
+      [
+        "gemma + mistral",
         5
       ],
       [
@@ -203,11 +199,15 @@
         5
       ],
       [
-        "llama + phi",
+        "granite + mistral + solar",
+        5
+      ],
+      [
+        "bart + bert + t5",
         4
       ],
       [
-        "deepseek + qwen",
+        "llama + phi",
         4
       ],
       [

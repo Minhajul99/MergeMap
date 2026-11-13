@@ -81,7 +81,7 @@ cg = build_graph(weight)
 pl.DataFrame({
     "a": [name[a] for a, _ in weight], "b": [name[b] for _, b in weight],
     "weight": list(weight.values()),
-}).sort("weight", descending=True).write_parquet(f"{OUT}/cocitation_edges.parquet")
+}).sort(["weight", "a", "b"], descending=[True, False, False]).write_parquet(f"{OUT}/cocitation_edges.parquet")
 
 n, m = cg.vcount(), cg.ecount()
 total_weight = sum(weight.values())

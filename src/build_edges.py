@@ -2,10 +2,16 @@ import polars as pl
 
 RAW = "data/raw/models.parquet"
 
+# Row order must be the same on every run: node numbers, tie-breaking and the
+# Leiden communities all depend on it. So every unique() keeps the file order
+# (for the 13 duplicated models, the first row in the file wins), and both
+# tables are sorted before they are saved.
+
 nodes = (
     pl.scan_parquet(RAW)
     .select("_id", "id", "author", "createdAt", "downloads", "likes")
-    .unique(subset="_id", keep="first")
+    .unique(subset="_id", keep="first", maintain_order=True)
+    .sort("_id")
     .collect()
 )
 
@@ -15,11 +21,13 @@ nodes.write_parquet("data/processed/nodes.parquet")
 edges_raw = (
     pl.scan_parquet(RAW)
     .select("_id", "createdAt", "baseModels")
-    .unique(subset="_id", keep="first")
+    .unique(subset="_id", keep="first", maintain_order=True)
     .rename({"_id": "child_id", "createdAt": "child_created"})
     .filter(pl.col("baseModels").is_not_null())
     .unnest("baseModels")
     .explode("models")
+    # Position of the parent in the model's own list (0 = listed first).
+    .with_columns(pl.int_range(pl.len()).over("child_id").alias("parent_pos"))
     .unnest("models")
     .rename({"_id": "parent_id", "id": "parent_name"})
     .collect()
@@ -63,13 +71,18 @@ print("parent-newer-than-child removed:", before - edges.height)
 
 # (d) Duplicate (child, parent) pairs.
 before = edges.height
-edges = edges.unique(subset=["child_id", "parent_id"], keep="first", maintain_order=True)
+edges = edges.sort("child_id", "parent_pos").unique(
+    subset=["child_id", "parent_id"], keep="first", maintain_order=True
+)
 print("duplicate edges removed:", before - edges.height)
 
 # ---------------------------------------------------------------------------
 # Save. Edge direction in the graph is child -> parent ("derived from").
+# Rows are sorted by child, then by the parent's position in the child's list.
 # ---------------------------------------------------------------------------
-edges = edges.select("child_id", "parent_id", "relation", "ghost", "parent_name")
+edges = edges.sort("child_id", "parent_pos").select(
+    "child_id", "parent_id", "relation", "ghost", "parent_name"
+)
 edges.write_parquet("data/processed/edges.parquet")
 
 # ---------------------------------------------------------------------------

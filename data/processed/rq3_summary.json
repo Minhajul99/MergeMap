@@ -3,12 +3,12 @@
     "alpha": 0.85,
     "beta": 1.0,
     "matrix_inverse_component_size": 986,
-    "matrix_inverse_largest_difference": 6.59383658785373e-12,
-    "igraph_ratio_relative_spread": 7.492780925194764e-13
+    "matrix_inverse_largest_difference": 1.057287590811029e-11,
+    "igraph_ratio_relative_spread": 7.453909400193793e-13
   },
   "hubs": {
     "overlap_top20_children_pagerank": 13,
-    "spearman_children_pagerank_among_parents": 0.9272613419335209,
+    "spearman_children_pagerank_among_parents": 0.9376087328421715,
     "roots_in_top20_pagerank": 16,
     "families_in_top100_pagerank": [
       [
@@ -80,7 +80,7 @@
         1
       ]
     ],
-    "pagerank_share_top20": 0.24504315769465984
+    "pagerank_share_top20": 0.24504315769466495
   },
   "lineage_betweenness": {
     "nodes_with_positive_betweenness": 42468,
@@ -133,12 +133,42 @@
     ]
   },
   "communities": {
-    "communities": 1202,
-    "communities_with_10plus_members": 79,
-    "modularity_leiden": 0.88781592511579,
-    "modularity_family_labels": 0.5609992412498762,
-    "overall_purity_among_named": 0.9644985747603005,
-    "unknown_parents": 2378,
-    "unknown_parents_in_clear_communities": 1251
+    "runs": 20,
+    "best_run": {
+      "communities": 1204,
+      "communities_with_10plus_members": 82,
+      "modularity": 0.8895544777297947,
+      "purity_among_named": 0.9621663643430941,
+      "unknown_parents": 2378,
+      "unknown_in_clear_communities": 1093,
+      "unknown_in_clear_share": 0.45962994112699745
+    },
+    "range_over_runs": {
+      "communities": {
+        "min": 1202,
+        "max": 1206
+      },
+      "communities_with_10plus_members": {
+        "min": 79,
+        "max": 83
+      },
+      "modularity": {
+        "min": 0.887987422049091,
+        "max": 0.8895544777297947
+      },
+      "purity_among_named": {
+        "min": 0.9552993003368748,
+        "max": 0.9642394402694999
+      },
+      "unknown_in_clear_communities": {
+        "min": 1054,
+        "max": 1266
+      },
+      "unknown_in_clear_share": {
+        "min": 0.4432296047098402,
+        "max": 0.5323801513877208
+      }
+    },
+    "modularity_family_labels": 0.5609992412498762
   }
 }
