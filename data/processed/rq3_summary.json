@@ -1,0 +1,144 @@
+{
+  "pagerank_checks": {
+    "alpha": 0.85,
+    "beta": 1.0,
+    "matrix_inverse_component_size": 986,
+    "matrix_inverse_largest_difference": 6.59383658785373e-12,
+    "igraph_ratio_relative_spread": 7.492780925194764e-13
+  },
+  "hubs": {
+    "overlap_top20_children_pagerank": 13,
+    "spearman_children_pagerank_among_parents": 0.9272613419335209,
+    "roots_in_top20_pagerank": 16,
+    "families_in_top100_pagerank": [
+      [
+        "qwen",
+        37
+      ],
+      [
+        "llama",
+        15
+      ],
+      [
+        "gemma",
+        14
+      ],
+      [
+        "bert",
+        6
+      ],
+      [
+        "smollm",
+        6
+      ],
+      [
+        "mistral",
+        4
+      ],
+      [
+        "whisper",
+        3
+      ],
+      [
+        "stable-diffusion",
+        2
+      ],
+      [
+        "roberta",
+        2
+      ],
+      [
+        "unknown",
+        2
+      ],
+      [
+        "vit",
+        2
+      ],
+      [
+        "phi",
+        2
+      ],
+      [
+        "flux",
+        1
+      ],
+      [
+        "gpt2",
+        1
+      ],
+      [
+        "gpt-oss",
+        1
+      ],
+      [
+        "t5",
+        1
+      ],
+      [
+        "tinyllama",
+        1
+      ]
+    ],
+    "pagerank_share_top20": 0.24504315769465984
+  },
+  "lineage_betweenness": {
+    "nodes_with_positive_betweenness": 42468,
+    "merge_share_of_all_nodes": 0.01625113577500191,
+    "merge_share_of_positive": 0.20356503720448338,
+    "merge_share_of_top": {
+      "20": 0.85,
+      "100": 0.88,
+      "1000": 0.869
+    },
+    "share_of_total_betweenness_held_by_merges": 0.8255210257412305
+  },
+  "cocitation_betweenness": {
+    "nodes": 10125,
+    "edges": 47300,
+    "top100_with_neighbours_in_2plus_families": 54,
+    "families_of_top100": [
+      [
+        "llama",
+        35
+      ],
+      [
+        "qwen",
+        22
+      ],
+      [
+        "unknown",
+        19
+      ],
+      [
+        "mistral",
+        15
+      ],
+      [
+        "phi",
+        4
+      ],
+      [
+        "gemma",
+        3
+      ],
+      [
+        "smollm",
+        1
+      ],
+      [
+        "deepseek",
+        1
+      ]
+    ]
+  },
+  "communities": {
+    "communities": 1202,
+    "communities_with_10plus_members": 79,
+    "modularity_leiden": 0.88781592511579,
+    "modularity_family_labels": 0.5609992412498762,
+    "overall_purity_among_named": 0.9644985747603005,
+    "unknown_parents": 2378,
+    "unknown_parents_in_clear_communities": 1251
+  }
+}

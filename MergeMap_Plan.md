@@ -236,11 +236,28 @@ Results:
 
 ## Phase 5: RQ3, hubs and bridges (Nov 19–21)
 
-- [ ] Top-20 by in-degree (children) and by PageRank on the child → parent graph, using igraph.
-- [ ] Validate igraph's ranking against the Assignment 3 `PageRank.py` on a subgraph of at most 1,000 nodes.
-- [ ] Betweenness on the cocitation network (small enough for the exact BFS-based algorithm of Topic 5). On the lineage graph, use `betweenness(cutoff=k)` on the undirected largest component.
-- [ ] Leiden communities on the cocitation network. Compare Q with the family partition's Q; show the community-by-family table.
-- [ ] Optional: HITS hub and authority scores.
+Done Nov 13 by `src/rq3.py` and `src/pagerank_matrix.py` (figures `figures/rq3_*.png`, numbers `data/processed/rq3_summary.json`, top-20 tables `data/processed/rq3_top_*.csv`). The run takes about 15 seconds.
+
+Two changes from the plan:
+
+- **PageRank is own code**, not igraph. On an acyclic graph the lecture formula x = alpha A D^-1 x + beta 1 can be solved exactly in one pass, deepest models first. alpha = 0.85, beta = 1. It matches the Assignment 3 matrix-inverse code on a 986-model component (largest difference 7e-12) and matches igraph on the whole graph up to one constant factor.
+- **Lineage betweenness is exact and directed**, not approximate and undirected. A directed path runs from a model up to an ancestor and stops at a root, so exact betweenness is cheap. State this in the report, since the proposal says "approximate betweenness".
+
+Results:
+
+- **Hubs by children:** FLUX.1-dev 43,421; Qwen1.5-0.5B 32,534; Qwen1.5-1.8B 30,627; gemma-2b 24,034; distilbert-base-uncased 13,263.
+- **Hubs by PageRank:** the same top four. 13 of the top 20 are in both lists; rank correlation 0.93 among models with children. PageRank lifts models whose descendants are further down: Qwen2.5-7B is 5th by PageRank with only 2,087 children, Llama-3.1-8B is 6th with 3,263. Families in the top 100: qwen 37, llama 15, gemma 14.
+- **Bridges in the lineage graph:** 42,468 models lie on at least one descendant-to-ancestor path. Merges are 1.6% of models but 85% of the top 20 by betweenness, 88% of the top 100, and hold 82.6% of all betweenness. The top models are merges in long merge chains (L3-Umbral-Mind-RP, the zelk12 gemma-2-9B series, the Kosmos-8B series).
+- **Caution on that result:** it is partly built in. A non-merge model has one parent, so few paths run through it; a merge has several ancestors above it by definition. The finding is the size of the effect, not its direction.
+- **Bridges between merge parents (cocitation betweenness):** Mistral-Nemo-Instruct-2407, Llama-3.1-8B, Qwen2.5-7B-Instruct, Mistral-7B-v0.1. They are official base models, not community models. 54 of the top 100 have cocitation neighbours in 2 or more named families.
+- **Communities:** Leiden finds 1,202 communities (79 with 10 or more members), Q = 0.89, against Q = 0.56 for the family labels. Communities are finer than families: several per family. 96.4% of named parents sit in their community's dominant family.
+- **Unknown parents:** 1,251 of the 2,378 unknown merge parents (52.6%) sit in a community where at least 90% of named members share one family. The largest community is 94.7% mistral among named members and holds 620 unknown parents. This supports, but does not prove, that most unknown parents are Mistral-based.
+
+- [x] Top-20 by in-degree (children) and by PageRank on the child → parent graph, using igraph.
+- [x] Validate igraph's ranking against the Assignment 3 `PageRank.py` on a subgraph of at most 1,000 nodes.
+- [x] Betweenness on the cocitation network (small enough for the exact BFS-based algorithm of Topic 5). On the lineage graph, use `betweenness(cutoff=k)` on the undirected largest component.
+- [x] Leiden communities on the cocitation network. Compare Q with the family partition's Q; show the community-by-family table.
+- [ ] Optional: HITS hub and authority scores. (Skipped; cut first if time is short.)
 
 ## Phase 6: RQ4, reach (Nov 21–22)
 
