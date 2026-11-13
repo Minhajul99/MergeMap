@@ -238,20 +238,22 @@ Results:
 
 Done Nov 13 by `src/rq3.py` and `src/pagerank_matrix.py` (figures `figures/rq3_*.png`, numbers `data/processed/rq3_summary.json`, top-20 tables `data/processed/rq3_top_*.csv`). The run takes about 15 seconds.
 
+Reproducibility fix (Nov 13): the first version gave slightly different numbers on every run, because `build_edges.py` did not keep row order, so node numbers changed between runs and ties were broken differently. Now every table is sorted before saving, Spearman uses average ranks for ties, and Leiden is run 20 times. Two full runs of the whole pipeline give identical output files.
+
 Two changes from the plan:
 
-- **PageRank is own code**, not igraph. On an acyclic graph the lecture formula x = alpha A D^-1 x + beta 1 can be solved exactly in one pass, deepest models first. alpha = 0.85, beta = 1. It matches the Assignment 3 matrix-inverse code on a 986-model component (largest difference 7e-12) and matches igraph on the whole graph up to one constant factor.
+- **PageRank is own code**, not igraph. On an acyclic graph the lecture formula x = alpha A D^-1 x + beta 1 can be solved exactly in one pass, deepest models first. alpha = 0.85, beta = 1. It matches the Assignment 3 matrix-inverse code on a 986-model component (largest difference 1e-11) and matches igraph on the whole graph up to one constant factor.
 - **Lineage betweenness is exact and directed**, not approximate and undirected. A directed path runs from a model up to an ancestor and stops at a root, so exact betweenness is cheap. State this in the report, since the proposal says "approximate betweenness".
 
 Results:
 
 - **Hubs by children:** FLUX.1-dev 43,421; Qwen1.5-0.5B 32,534; Qwen1.5-1.8B 30,627; gemma-2b 24,034; distilbert-base-uncased 13,263.
-- **Hubs by PageRank:** the same top four. 13 of the top 20 are in both lists; rank correlation 0.93 among models with children. PageRank lifts models whose descendants are further down: Qwen2.5-7B is 5th by PageRank with only 2,087 children, Llama-3.1-8B is 6th with 3,263. Families in the top 100: qwen 37, llama 15, gemma 14.
+- **Hubs by PageRank:** the same top four. 13 of the top 20 are in both lists; rank correlation 0.94 among models with children (Spearman with average ranks for ties). PageRank lifts models whose descendants are further down: Qwen2.5-7B is 5th by PageRank with only 2,087 children, Llama-3.1-8B is 6th with 3,263. Families in the top 100: qwen 37, llama 15, gemma 14.
 - **Bridges in the lineage graph:** 42,468 models lie on at least one descendant-to-ancestor path. Merges are 1.6% of models but 85% of the top 20 by betweenness, 88% of the top 100, and hold 82.6% of all betweenness. The top models are merges in long merge chains (L3-Umbral-Mind-RP, the zelk12 gemma-2-9B series, the Kosmos-8B series).
 - **Caution on that result:** it is partly built in. A non-merge model has one parent, so few paths run through it; a merge has several ancestors above it by definition. The finding is the size of the effect, not its direction.
 - **Bridges between merge parents (cocitation betweenness):** Mistral-Nemo-Instruct-2407, Llama-3.1-8B, Qwen2.5-7B-Instruct, Mistral-7B-v0.1. They are official base models, not community models. 54 of the top 100 have cocitation neighbours in 2 or more named families.
-- **Communities:** Leiden finds 1,202 communities (79 with 10 or more members), Q = 0.89, against Q = 0.56 for the family labels. Communities are finer than families: several per family. 96.4% of named parents sit in their community's dominant family.
-- **Unknown parents:** 1,251 of the 2,378 unknown merge parents (52.6%) sit in a community where at least 90% of named members share one family. The largest community is 94.7% mistral among named members and holds 620 unknown parents. This supports, but does not prove, that most unknown parents are Mistral-based.
+- **Communities:** Leiden is run 20 times (seeds 0–19); the best partition by Q is reported, with the min–max over all 20 runs in brackets. 1,204 communities [1,202–1,206], 82 with 10 or more members [79–83], Q = 0.890 [0.888–0.890], against Q = 0.56 for the family labels. Communities are finer than families: several per family. 96.2% [95.5–96.4%] of named parents sit in their community's dominant family.
+- **Unknown parents:** 1,093 of the 2,378 unknown merge parents (46.0%, range 44.3–53.2% over the 20 runs) sit in a community where at least 90% of named members share one family. The largest community is 92.9% mistral among named members and holds 474 unknown parents. This supports, but does not prove, that many unknown parents are Mistral-based. The share moves by 9 points between runs, so quote the range, not one value.
 
 - [x] Top-20 by in-degree (children) and by PageRank on the child → parent graph, using igraph.
 - [x] Validate igraph's ranking against the Assignment 3 `PageRank.py` on a subgraph of at most 1,000 nodes.
@@ -261,9 +263,24 @@ Results:
 
 ## Phase 6: RQ4, reach (Nov 21–22)
 
-- [ ] **Own implementation:** reach(v) = number of descendants of v, by BFS against the edge direction.
-- [ ] Reach for every root on `G_full` and `G_nomerge`: distribution, largest reach, reach added by merges.
-- [ ] Audit coverage: share of total reach covered by the top-k models by in-degree or PageRank, against k random models (random failure versus hub failure, Topic 4).
+Done Nov 13 by `src/rq4.py` (figures `figures/rq4_*.png`, numbers `data/processed/rq4_summary.json`, per-model reach `data/processed/rq4_reach.parquet`). The run takes about 15 seconds. PageRank moved to `src/pagerank_dag.py` so RQ3 and RQ4 share it; RQ3 output is unchanged.
+
+Built-in check: summed root reach equals the number of (root, descendant) pairs from the root sets of `build_graph.py`, so the BFS and the root sets agree.
+
+Results:
+
+- **Root reach:** total (root, descendant) pairs rise from 862,654 without merges to 1,135,867 with them (+31.7%). 3,591 of 44,867 roots gain descendants through merges. Roots with 1,000 or more descendants: 121 without, 198 with.
+- **The gain is concentrated in LLM bases:** FLUX.1-dev, Qwen1.5-0.5B, gemma-2b and distilbert gain almost nothing. Mistral-7B-v0.1 +26.6%, Meta-Llama-3-8B +34.9%, Llama-3.1-8B +10.5%. Largest relative gains among roots with 1,000+ descendants: Mistral-Nemo-Instruct-2407 +221.5% (1,134 to 3,646), gemma-2-9b-it +84.5%, Llama-3.1-70B +78.1%.
+- **Multi-root exposure:** 30,147 models (3.4% of non-root models) descend from 2 or more roots, which is only possible through merges. 6,467 descend from 10 or more; one model has 128 roots. Only 279 have roots in 2 or more named families.
+- **Audit coverage** (share of all 942,088 models that are audited or descend from an audited model):
+  - top 1 model: 4.6%; top 10: 21.3%; top 100: about 52%; top 1,000: about 78% (by children or PageRank).
+  - Random models: 0.4% at k = 1,000; random models with at least one child: 2.3%. Hub failure versus random failure, as in Topic 4.
+  - Ranking by reach is worse than by children or PageRank above k = 100 (69.1% at k = 1,000), because the models with the largest reach are nested inside each other: auditing a root and then its biggest descendant covers nothing new.
+  - Without merge edges the same strategy covers almost the same share (20.9% against 21.3% at k = 10). Merges add 31.7% more (root, descendant) pairs, but mostly between models that are already covered by another big root. Merges make more models depend on several base models at once, but they bring few new models within reach of an audit of the top hubs.
+
+- [x] **Own implementation:** reach(v) = number of descendants of v, by BFS against the edge direction.
+- [x] Reach for every root on `G_full` and `G_nomerge`: distribution, largest reach, reach added by merges.
+- [x] Audit coverage: share of total reach covered by the top-k models by in-degree or PageRank, against k random models (random failure versus hub failure, Topic 4).
 
 ## Phase 7: Baselines (Nov 22–23)
 
