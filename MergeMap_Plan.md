@@ -90,7 +90,7 @@ Measured Nov 12, 2026.
 - `createdAt`: 29,561 models carry the placeholder 2022-03-02. Latest date is 2026-10-22.
 - File size 1.64 GB. Read only the needed columns.
 
-**Snapshot:** the proposal says one dated snapshot. Use this Oct 22, 2026 file. Record its SHA-256 and the matching `cfahlgren1/hub-stats` commit in the readme, and make `download.py` fetch that commit.
+**Snapshot (confirmed Nov 12, 2026):** the local file is exactly `cfahlgren1/hub-stats` commit `1a8f69d167bd1442c6a31fee5b818e86fc6ae4f7`, uploaded 2026-10-22 13:31 UTC. SHA-256 `35cb53dfd7847502d3bf7041c080a2468513af44d464f5b7f0028ffea20de738`, 1,635,955,091 bytes. `src/download.py` pins that commit and checks the hash. The licence is Apache-2.0, confirmed on the dataset page. Put the commit, hash and licence in the readme.
 
 ### Probe results (Nov 12, 2026)
 
@@ -108,7 +108,7 @@ A quick pure-Python pass over the cleaned edges. These are preview numbers, not 
 
 - **Family labels at two levels.** Root level needs no rule and is fully objective; report it first. Family level uses a regex list applied to the names of **all** roots, built from the top 200 roots by reach. Report the share of merge parents left `unknown`.
 - **If behind schedule, cut in this order:** HITS, betweenness on the lineage graph, the per-author repeat of RQ2.
-- **Snapshot:** look up the `hub-stats` commit for Oct 22, 2026 with `huggingface_hub.list_repo_commits`. If it cannot be matched, the readme states the download date and the file's SHA-256, and the submitted edge list is the reproducible artefact.
+- **Snapshot:** resolved; see the snapshot note above.
 - **References:** open the three arXiv pages and confirm titles and authors before the report.
 
 ---
@@ -141,18 +141,20 @@ Each row is one sentence to replace. Sections not listed stay as they are.
 
 ## Phase 1: Data (Nov 12–13) — workflow step 1
 
-- [ ] `src/download.py`: `hf_hub_download(repo_id="cfahlgren1/hub-stats", filename="models.parquet", repo_type="dataset", revision=<commit sha>)`, saving to `data/raw/`.
-- [ ] Read only `_id`, `id`, `author`, `createdAt`, `downloads`, `likes`, `baseModels`.
-- [ ] Edge list `(child_id, parent_id, relation)` keyed on `_id`. Node table with `_id`, `id`, `author`, `createdAt`, `downloads`, `likes`.
+Done Nov 12 by `src/build_edges.py`. Output: `data/processed/nodes.parquet` (3,177,863 models) and `data/processed/edges.parquet` (929,941 edges, 942,088 nodes, 15,046 merges with 2 or more parents). Logged: 2,072 self-loops removed, 14,006 edges to 3,431 ghost parents kept, 3,430 newer-parent edges removed, 0 duplicates. The raw file has 13 duplicate model rows, removed first.
+
+- [x] `src/download.py`: `hf_hub_download(repo_id="cfahlgren1/hub-stats", filename="models.parquet", repo_type="dataset", revision=<commit sha>)`, saving to `data/raw/`.
+- [x] Read only `_id`, `id`, `author`, `createdAt`, `downloads`, `likes`, `baseModels`.
+- [x] Edge list `(child_id, parent_id, relation)` keyed on `_id`. Node table with `_id`, `id`, `author`, `createdAt`, `downloads`, `likes`.
 - [x] Go/no-go gate: 15,119 merges with 2 or more parents. Go.
-- [ ] Merge definition, frozen: `baseModels.relation == "merge"`.
+- [x] Merge definition, frozen: `baseModels.relation == "merge"`.
 
 ## Phase 2: Graph model (Nov 13–15) — workflow step 2
 
-- [ ] Drop self-loops and duplicate edges. Log counts.
-- [ ] Keep missing parents as ghost nodes. Log count.
-- [ ] Drop edges where the parent is strictly newer than the child (ghost parents have no date and are kept). Log count; expect about 3,430.
-- [ ] Nodes are models that appear in at least one edge.
+- [x] Drop self-loops and duplicate edges. Log counts.
+- [x] Keep missing parents as ghost nodes. Log count.
+- [x] Drop edges where the parent is strictly newer than the child (ghost parents have no date and are kept). Log count; expect about 3,430.
+- [x] Nodes are models that appear in at least one edge.
 - [ ] Directed graph, edges child → parent.
 - [ ] **Own implementation:** cycle check and topological order, reusing the Assignment 2 topological sort. Break and log any cycles.
 - [ ] Flag the 200 merges with one known parent: reach only.

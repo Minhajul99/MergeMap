@@ -1,6 +1,9 @@
 # Raw data (1.6 GB, fetched by download script)
 data/raw/
 
+# Node table (131 MB, rebuilt by src/build_edges.py)
+data/processed/nodes.parquet
+
 # Python virtual environment
 mergemap/
 
