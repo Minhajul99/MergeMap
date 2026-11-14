@@ -284,10 +284,37 @@ Results:
 
 ## Phase 7: Baselines (Nov 22–23)
 
+Done Nov 13 by `src/baseline.py` (figures `figures/baseline_*.png`, numbers `data/processed/baseline_summary.json` and `baseline_results.csv`). 100 runs of each baseline, fixed seed 6917; the run takes about 6.5 minutes. `src/mixing.py` now holds the cocitation and assortativity code shared with `rq2.py`; RQ2 output is unchanged.
+
+Three baselines, all degree-preserving:
+
+- **A. Shuffled merges:** parents are swapped between merges (10 swap attempts per merge edge, 30.9% accepted, 94% of merge edges end up different). Every merge keeps its number of parents, every parent its number of merges, and every parent stays older than the merge it is given. The rest of the lineage graph is unchanged.
+- **A2. Shuffled within families (added, stricter):** the same, but only parents with the same family label are swapped (7.7% accepted, 64% of merge edges different). Random merging across families is physically impossible (weights of different architectures cannot be combined), so baseline A alone would make the inbreeding result look stronger than it is. A2 asks: given who a merge's parents are by family, are they closer relatives than chance?
+- **B. Rewired cocitation network:** igraph `rewire()`, every parent keeps its number of cocitation links. Kept because the proposal names it; it destroys the clique structure merges create, so it is the weakest baseline.
+
+Results (observed, then baseline mean; z-scores are all far above 3, and no baseline run reached the observed value):
+
+| Measure | Observed | A. shuffled | A2. within families | B. rewired |
+|---|---|---|---|---|
+| Inbred within 1 generation | 32.6% | 5.3% | 16.3% | — |
+| Inbred within 2 | 42.0% | 10.6% | 25.4% | — |
+| Inbred within 3 | 45.9% | 13.8% | 29.9% | — |
+| Inbred at any depth | 48.7% | 16.6% | 34.2% | — |
+| Ancestor type within 1 | 19.1% | 2.6% | 8.9% | — |
+| Assortativity, all labels (unweighted) | 0.751 | 0.046 | (unchanged by design) | −0.002 |
+| Assortativity, named only (unweighted) | 0.979 | 0.049 | (unchanged by design) | −0.004 |
+| Clustering coefficient | 0.581 | — | — | 0.023 |
+
+Reading:
+
+- **Inbreeding is real.** Even against the strict within-family baseline, merges combine close relatives twice as often as chance (32.6% against 16.3% within one generation; z = 66). The excess is largest at depth 1, and the ancestor type (merging a model with its own ancestor) is 2.1 times the within-family baseline.
+- **Family assortativity is real but expected.** Random merging would give r ≈ 0.05; the observed 0.75 to 0.98 is far above it. But part of this is forced by architecture compatibility, so the report should present it as confirmation of a constraint, not as a discovery.
+- **The z-scores are huge because the baselines have little spread** (standard deviations of 0.2 to 0.5 points). Report the observed and baseline values side by side; the size of the gap is the finding, the z-score only says it is not noise.
+
 Both baselines are degree-preserving random graphs, as the proposal says. About 100 runs each, fixed seeds.
 
-- [ ] Mixing: degree-preserving rewiring of the cocitation graph with `rewire()`. Recompute family assortativity on each run. Report the real value against the mean and spread, as a z-score.
-- [ ] Inbreeding: shuffle the parent column of the merge-child-to-parent table, so every parent keeps its merge count and every child keeps its parent count. Reject a swap that gives a child the same parent twice or a parent newer than the child. Rerun the depth 0–3 search on each run. Report z-scores.
+- [x] Mixing: degree-preserving rewiring of the cocitation graph with `rewire()`. Recompute family assortativity on each run. Report the real value against the mean and spread, as a z-score.
+- [x] Inbreeding: shuffle the parent column of the merge-child-to-parent table, so every parent keeps its merge count and every child keeps its parent count. Reject a swap that gives a child the same parent twice or a parent newer than the child. Rerun the depth 0–3 search on each run. Report z-scores.
 
 ## Phase 8: Buffer (Nov 24–25)
 

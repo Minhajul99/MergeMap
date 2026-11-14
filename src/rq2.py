@@ -22,7 +22,6 @@ import json
 import math
 import random
 from collections import Counter
-from itertools import combinations
 
 import igraph as ig
 import numpy as np
@@ -30,6 +29,7 @@ import polars as pl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, LogNorm
 
+import mixing
 from graph_io import load_lineage
 from inbreeding import LEVELS, inbreeding_rates
 from plotstyle import INK, INK_SECONDARY, SERIES, apply_style, save
@@ -52,17 +52,8 @@ print(f"merges with 2+ parents: {len(merges):,}")
 # 1. Cocitation network of merge parents
 # ---------------------------------------------------------------------------
 def cocitation(merge_list):
-    """Weighted cocitation: weight(a, b) = number of merges that cite both.
-
-    Each merge child points to its parents, so two parents are cocited once
-    per merge that lists both. This equals the off-diagonal part of A.A^T
-    when A is restricted to merge edges (Topic 2).
-    """
-    weight = Counter()
-    for v in merge_list:
-        for a, b in combinations(sorted(parents_of[v]), 2):
-            weight[(a, b)] += 1
-    return weight
+    """Weighted cocitation network of the given merges (see mixing.py)."""
+    return mixing.cocitation(merge_list, parents_of)
 
 
 def build_graph(weight):
@@ -155,40 +146,9 @@ save(fig, "rq2_family_matrix")
 # ---------------------------------------------------------------------------
 # 3. Family assortativity and modularity
 # ---------------------------------------------------------------------------
-def assortativity_and_modularity(pair_weights, label_of):
-    """Assortativity coefficient r and modularity Q from a mixing matrix.
-
-    e[i][j] = fraction of edge ends joining label i to label j, a[i] = row sum.
-        Q = sum_i (e_ii - a_i^2)                      (Topic 5-3)
-        r = Q / (1 - sum_i a_i^2)                     (Newman [5], eq. 7.80)
-    So r is Q divided by the largest value Q could take with these labels.
-    """
-    e = Counter()
-    total = 0
-    for (a, b), w in pair_weights.items():
-        la, lb = label_of[a], label_of[b]
-        e[(la, lb)] += w
-        e[(lb, la)] += w
-        total += 2 * w
-    a_share = Counter()
-    for (la, _), w in e.items():
-        a_share[la] += w / total
-    same_share = sum(w for (la, lb), w in e.items() if la == lb) / total
-    expected = sum(s * s for s in a_share.values())
-    q = same_share - expected
-    return q / (1 - expected), q
-
-
 def mixing_report(pair_weights, label):
-    known = {pair: w for pair, w in pair_weights.items()
-             if family[pair[0]] not in ("unknown", "mixed") and family[pair[1]] not in ("unknown", "mixed")}
-    unit = {pair: 1 for pair in pair_weights}
-    unit_known = {pair: 1 for pair in known}
-    report = {}
-    for key, data in (("all_labels_weighted", pair_weights), ("all_labels_unweighted", unit),
-                      ("named_only_weighted", known), ("named_only_unweighted", unit_known)):
-        r, q = assortativity_and_modularity(data, family)
-        report[key] = {"assortativity": r, "modularity_Q": q, "links": len(data)}
+    """Assortativity r and modularity Q four ways (see mixing.py), printed."""
+    report = mixing.mixing_variants(pair_weights, family)
     print(f"    {label}")
     for key, value in report.items():
         print(f"      {key:<24} r = {value['assortativity']:.3f}   Q = {value['modularity_Q']:.3f}   "
