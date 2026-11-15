@@ -1,0 +1,21 @@
+merges,authors,first_created,parents
+223,1,2025-06-10,Nondzu/Mistral-7B-codealpaca-lora + TIGER-Lab/MAmmoTH2-7B + mistralai/Mistral-7B-Instruct-v0.2 + mistralai/Mistral-7B-v0.1
+143,127,2023-12-27,OpenPipe/mistral-ft-optimized-1218 + mlabonne/NeuralHermes-2.5-Mistral-7B
+102,3,2025-04-23,Laxhar/noobai-XL-1.1 + OnomaAIResearch/Illustrious-XL-v2.0
+83,13,2024-04-11,NousResearch/Hermes-2-Pro-Mistral-7B + WizardLMTeam/WizardMath-7B-V1.1
+56,2,2024-03-26,AurelPx/Percival_01-7b-slerp + liminerity/M7-7b
+49,2,2024-12-16,Laxhar/noobai-XL-1.1 + OnomaAIResearch/Illustrious-xl-early-release-v0
+49,2,2025-03-26,Laxhar/noobai-XL-1.1 + OnomaAIResearch/Illustrious-XL-v1.0
+47,5,2024-04-08,Equall/Saul-7B-Base + HuggingFaceH4/zephyr-7b-beta
+42,2,2025-03-01,BioMistral/BioMistral-7B + OdiaGenAI/mistral_hindi_7b_base_v1
+37,1,2025-04-11,Cognitive-Lab/LLama3-Gaja-Hindi-8B-v0.1 + johnsnowlabs/JSL-MedLlama-3-8B-v2.0 + meta-llama/Meta-Llama-3-8B
+37,1,2025-09-09,Qwen/Qwen2.5-7B + Qwen/Qwen2.5-Coder-7B-Instruct + Qwen/Qwen2.5-Math-7B-Instruct
+37,1,2025-09-09,deepseek-ai/deepseek-coder-7b-base-v1.5 + deepseek-ai/deepseek-coder-7b-instruct-v1.5 + deepseek-ai/deepseek-math-7b-instruct
+34,33,2024-02-03,flemmingmiguel/MBX-7B + udkai/Turdus
+33,2,2025-02-23,meta-llama/Meta-Llama-3-8B-Instruct + tokyotech-llm/Llama-3-Swallow-8B-Instruct-v0.1
+31,1,2025-07-03,elyza/Llama-3-ELYZA-JP-8B + meta-llama/Meta-Llama-3-8B-Instruct
+29,7,2024-04-11,arcee-ai/sec-mistral-7b-instruct-1.6-epoch + dphn/dolphin-2.8-mistral-7b-v02
+29,2,2024-07-14,MLP-KTLim/llama-3-Korean-Bllossom-8B + meta-llama/Meta-Llama-3-8B-Instruct
+28,5,2024-02-19,BioMistral/BioMistral-7B + mistralai/Mistral-7B-Instruct-v0.1
+27,1,2024-05-02,NousResearch/Meta-Llama-3-8B-Instruct + mlabonne/OrpoLlama-3-8B
+27,1,2025-07-03,hfl/llama-3-chinese-8b-instruct + meta-llama/Meta-Llama-3-8B-Instruct

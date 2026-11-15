@@ -1,0 +1,82 @@
+G_full: 942,088 nodes, 929,941 edges
+G_nomerge: 881,911 edges
+
+[1] nodes with at least one child: 87,535 (9.3%)
+    largest number of children: 43,421
+    power-law exponent alpha = 1.92 (cumulative slope, 10 <= k <= 7,291)
+    cross-check, powerlaw package with xmin=10: alpha = 1.86
+saved results/rq1/rq1_children_distribution.png
+    finetune   edges  358,180  parents  29,801  max 12,761  alpha 1.88
+    adapter    edges  332,026  parents   8,644  max 42,702  alpha 1.89
+    quantized  edges  191,705  parents  60,822  max  1,529  alpha 2.20
+    merge      edges   48,030  parents  10,187  max    412  alpha 2.60
+saved results/rq1/rq1_children_by_relation.png
+
+[2] share of all edges held by the top models (ranked by children):
+    top  0.01% =     94 models hold 42.1% of edges
+    top   0.1% =    942 models hold 69.0% of edges
+    top     1% =  9,421 models hold 84.8% of edges
+    top     5% = 47,104 models hold 95.7% of edges
+    top    10% = 94,209 models hold 100.0% of edges
+    among the models that have at least one child:
+    top     1% =    875 models hold 68.3% of edges
+    top     5% =  4,377 models hold 80.1% of edges
+    top    10% =  8,754 models hold 84.4% of edges
+    top    20% = 17,507 models hold 88.7% of edges
+saved results/rq1/rq1_top_heavy_share.png
+
+[3] merge models: 15,310; with 2+ parents: 15,046; mean parents 3.17; max 97
+    non-merge models with 2+ parents: 0 (so G_nomerge is a forest)
+
+[4] weakly connected components:
+    G_full     components 41,637  largest 418,549 (44.4% of nodes)  components joining 2+ named families: 12
+    G_nomerge  components 60,177  largest  43,660 (4.6% of nodes)  components joining 2+ named families: 0
+    named families in the largest component of G_full: 28 (bart, bert, clip, deepseek, flux, gemma, glm, gpt-oss, gpt2, granite, hunyuan, krea, lfm, llama, mistral, opt, phi, pythia, qwen, roberta, smollm, solar, stable-diffusion, t5, vit, wav2vec2, whisper, z-image)
+    roots in the largest component of G_full: 2,448
+saved results/rq1/rq1_component_sizes.png
+
+[5] lineage depth (generations from a root):
+    G_full     max 151  mean 1.62  depth 1: 70.5%  depth 5+: 2.9%  nodes at depth 10+: 6,917
+    G_nomerge  max  39  mean 1.39  depth 1: 73.3%  depth 5+: 1.3%  nodes at depth 10+: 185
+    merge models themselves: mean depth 6.4, median 3
+saved results/rq1/rq1_lineage_depth.png
+
+[6] merges with 2+ parents: 15,046
+    root level:   parents trace to different roots in 12,869 (85.5%)
+    family level: same family 6,852 (45.5%), cross-family 203 (1.3%), undetermined 7,991 (53.1%)
+    cross-family share among merges with known families: 2.9%
+    most common cross-family combinations:
+         82  llama + mistral
+         12  gemma + qwen
+          7  gemma + llama
+          5  mistral + solar
+          5  gemma + mistral
+          5  llama + qwen
+          5  granite + mistral + solar
+          4  bart + bert + t5
+
+[7] growth: 929,941 attachment events replayed in creation order
+    attachment rate R(k) ~ k^beta with beta = 1.01 for 1 <= k < 4,096 (beta = 1 is linear preferential attachment)
+      k ~        1   R = 2.40e-06   from 42,971 events
+      k ~        2   R = 3.70e-06   from 41,467 events
+      k ~        5   R = 9.46e-06   from 39,192 events
+      k ~       11   R = 2.22e-05   from 39,902 events
+      k ~       22   R = 5.30e-05   from 42,635 events
+      k ~       45   R = 1.29e-04   from 47,627 events
+      k ~       90   R = 3.13e-04   from 58,350 events
+      k ~      181   R = 4.50e-04   from 73,206 events
+      k ~      362   R = 6.82e-04   from 74,559 events
+      k ~      724   R = 1.72e-03   from 77,762 events
+      k ~    1,448   R = 3.04e-03   from 72,781 events
+      k ~    2,896   R = 5.49e-03   from 62,267 events
+      k ~    5,792   R = 1.32e-02   from 51,073 events
+      k ~   11,585   R = 2.39e-02   from 42,845 events
+      k ~   23,170   R = 2.38e-02   from 54,427 events
+      k ~   46,341   R = 2.87e-02   from 10,653 events
+    largest hubs (k ~ 46,341) get 0.26x the rate that the fitted line predicts: attachment saturates at the top
+    Price's model: alpha = 2 + a/c >= 2 (c = 1.036 parents per new model); observed alpha = 1.92 (powerlaw package: 1.86)
+    age vs children (Spearman): 0.046 over all dated models, 0.079 over models with children
+    models with 100+ children: 754; median share of their children gained in the first 90 days: 14.6%
+saved results/rq1/rq1_growth.png
+
+saved results/rq1/rq1_summary.json

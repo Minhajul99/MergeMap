@@ -1,0 +1,62 @@
+graph: 942,088 models, 44,867 roots
+check: root reach agrees with the root sets from 3_build_graph.py
+
+[2] reach of the 44,867 roots
+    total (root, descendant) pairs: 862,654 without merges, 1,135,867 with merges (+31.7%)
+    largest reach: 43,659 without, 43,673 with
+    roots that gain descendants through merges: 3,591 of 44,867
+    roots with 1,000+ descendants: 121 without, 198 with
+
+    top 20 roots by reach:
+       1   43,659 ->  43,673  (+  0.0%)  black-forest-labs/FLUX.1-dev  [flux]
+       2   32,560 ->  32,564  (+  0.0%)  Qwen/Qwen1.5-0.5B  [qwen]
+       3   30,652 ->  30,657  (+  0.0%)  Qwen/Qwen1.5-1.8B  [qwen]
+       4   24,095 ->  24,114  (+  0.1%)  google/gemma-2b  [gemma]
+       5   21,458 ->  22,657  (+  5.6%)  Qwen/Qwen2.5-7B  [qwen]
+       6   19,398 ->  21,430  (+ 10.5%)  meta-llama/Llama-3.1-8B  [llama]
+       7   13,642 ->  13,643  (+  0.0%)  distilbert/distilbert-base-uncased  [bert]
+       8    9,119 ->  11,548  (+ 26.6%)  mistralai/Mistral-7B-v0.1  [mistral]
+       9   11,441 ->  11,500  (+  0.5%)  stabilityai/stable-diffusion-xl-base-1.0  [stable-diffusion]
+      10   10,887 ->  11,059  (+  1.6%)  Qwen/Qwen3-4B-Instruct-2507  [qwen]
+      11   10,487 ->  10,793  (+  2.9%)  Qwen/Qwen2.5-1.5B  [qwen]
+      12    7,595 ->  10,247  (+ 34.9%)  meta-llama/Meta-Llama-3-8B  [llama]
+      13    9,841 ->   9,851  (+  0.1%)  google/gemma-7b  [gemma]
+      14    9,719 ->   9,729  (+  0.1%)  HuggingFaceTB/SmolLM2-360M  [smollm]
+      15    8,904 ->   9,050  (+  1.6%)  Qwen/Qwen2.5-0.5B  [qwen]
+      16    7,709 ->   7,930  (+  2.9%)  Qwen/Qwen2.5-3B  [qwen]
+      17    7,637 ->   7,864  (+  3.0%)  Qwen/Qwen3-8B  [qwen]
+      18    7,113 ->   7,471  (+  5.0%)  meta-llama/Llama-3.2-3B-Instruct  [llama]
+      19    7,443 ->   7,450  (+  0.1%)  google-bert/bert-base-uncased  [bert]
+      20    6,611 ->   6,662  (+  0.8%)  google/gemma-3-4b-pt  [gemma]
+    largest relative gains among roots with 1,000+ descendants:
+      + 221.5%   1,134 ->  3,646  mistralai/Mistral-Nemo-Instruct-2407
+      +  84.5%   2,048 ->  3,778  google/gemma-2-9b-it
+      +  78.1%   3,190 ->  5,680  meta-llama/Llama-3.1-70B
+      +  62.4%   1,350 ->  2,193  google/gemma-2-9b
+      +  60.8%   3,688 ->  5,932  meta-llama/Meta-Llama-3-8B-Instruct
+      +  50.9%   1,162 ->  1,754  mistralai/Mistral-Small-3.1-24B-Base-2503
+      +  34.9%   7,595 -> 10,247  meta-llama/Meta-Llama-3-8B
+      +  34.2%   1,241 ->  1,665  deepseek-ai/DeepSeek-R1-Distill-Llama-8B
+saved results/rq4/rq4_root_reach.png
+saved results/rq4/rq4_top_roots.png
+
+[3] models that descend from 2 or more roots: 30,147 (3.36% of non-root models)
+    most roots behind one model: 128; models with 10+ roots: 6,467
+    models whose roots span 2+ named families: 279
+
+[4] audit coverage: share of all 942,088 models audited or descending from an audited model
+         k             by children             by PageRank                by reach  by reach, without merg           random models  random models with a c
+         1                   4.64%                   4.64%                   4.64%                   4.63%                   0.00%                   0.00%
+         2                   8.09%                   8.09%                   8.09%                   8.09%                   0.00%                   0.00%
+         5                  15.35%                  16.31%                  16.31%                  16.18%                   0.00%                   0.01%
+        10                  21.28%                  21.26%                  21.26%                  20.90%                   0.00%                   0.01%
+        20                  27.75%                  30.31%                  28.82%                  27.16%                   0.01%                   0.04%
+        50                  41.04%                  40.99%                  40.72%                  39.74%                   0.01%                   0.10%
+       100                  51.58%                  52.11%                  50.90%                  50.10%                   0.13%                   0.21%
+       200                  60.91%                  61.52%                  57.22%                  58.89%                   0.18%                   0.51%
+       500                  71.13%                  71.81%                  62.46%                  68.93%                   0.26%                   1.22%
+      1000                  78.07%                  78.23%                  69.10%                  75.34%                   0.44%                   2.28%
+saved results/rq4/rq4_audit_coverage.png
+    (random models from all 942,088: 0.44% covered at k = 1000, not drawn in the figure)
+
+saved results/rq4/rq4_summary.json

@@ -1,0 +1,352 @@
+{
+  "runs": 100,
+  "seed": 6917,
+  "swaps_per_edge": 10,
+  "shuffle_acceptance_rate": 0.30941280408658883,
+  "shuffle_share_of_merge_edges_changed": 0.9434532931373782,
+  "inbreeding": {
+    "1": {
+      "total": {
+        "observed": 0.32626611724046256,
+        "baseline_mean": 0.052670477203243395,
+        "baseline_sd": 0.0015965756604872207,
+        "z": 171.36403041101542,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.04918250697859897,
+        "baseline_max": 0.05675927156719394
+      },
+      "ancestor": {
+        "observed": 0.19121361159112057,
+        "baseline_mean": 0.025715140236607734,
+        "baseline_sd": 0.001122204714126985,
+        "z": 147.47618618164668,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.023195533696663564,
+        "baseline_max": 0.028911338561743986
+      },
+      "common_ancestor": {
+        "observed": 0.13505250564934201,
+        "baseline_mean": 0.026955336966635653,
+        "baseline_sd": 0.0011524585239060163,
+        "z": 93.79701433100924,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.023328459391200318,
+        "baseline_max": 0.029974744118038018
+      }
+    },
+    "2": {
+      "total": {
+        "observed": 0.42017812043067926,
+        "baseline_mean": 0.10572976206300679,
+        "baseline_sd": 0.0027786820302136625,
+        "z": 113.16457045050724,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.10002658513890735,
+        "baseline_max": 0.11212282334175196
+      },
+      "ancestor": {
+        "observed": 0.21381097966236873,
+        "baseline_mean": 0.03692144091452878,
+        "baseline_sd": 0.0014169133110539483,
+        "z": 124.84146868255722,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.03382958925960388,
+        "baseline_max": 0.039478931277415925
+      },
+      "common_ancestor": {
+        "observed": 0.2063671407683105,
+        "baseline_mean": 0.06880832114847801,
+        "baseline_sd": 0.00233971755119029,
+        "z": 58.79291692702475,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.06307324205768976,
+        "baseline_max": 0.07423900039877708
+      }
+    },
+    "3": {
+      "total": {
+        "observed": 0.45912534892994816,
+        "baseline_mean": 0.13802339492223847,
+        "baseline_sd": 0.003291661726892453,
+        "z": 97.55010710376101,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.1302007177987505,
+        "baseline_max": 0.14681642961584473
+      },
+      "ancestor": {
+        "observed": 0.22225176126545262,
+        "baseline_mean": 0.041317958261331916,
+        "baseline_sd": 0.0014806215051744302,
+        "z": 122.20125290075745,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.03741858301209624,
+        "baseline_max": 0.04439718197527582
+      },
+      "common_ancestor": {
+        "observed": 0.23687358766449554,
+        "baseline_mean": 0.09670543666090654,
+        "baseline_sd": 0.0028776924403273443,
+        "z": 48.70852389897668,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.08965838096504054,
+        "baseline_max": 0.10341619034959458
+      }
+    },
+    "any": {
+      "total": {
+        "observed": 0.4873720590190084,
+        "baseline_mean": 0.16604147281669543,
+        "baseline_sd": 0.00527440818899537,
+        "z": 60.92258594485414,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.15372856573175595,
+        "baseline_max": 0.1807789445699854
+      },
+      "ancestor": {
+        "observed": 0.22810049182506978,
+        "baseline_mean": 0.045114316097301606,
+        "baseline_sd": 0.0017019726397041574,
+        "z": 107.51417000426954,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.04094111391732022,
+        "baseline_max": 0.04918250697859897
+      },
+      "common_ancestor": {
+        "observed": 0.25927156719393857,
+        "baseline_mean": 0.12092715671939387,
+        "baseline_sd": 0.0042485364448562055,
+        "z": 32.56283952607757,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.11079356639638442,
+        "baseline_max": 0.13159643759138642
+      }
+    }
+  },
+  "within_family_acceptance_rate": 0.07659728677301847,
+  "within_family_share_of_merge_edges_changed": 0.6433806473223632,
+  "inbreeding_within_family": {
+    "1": {
+      "total": {
+        "observed": 0.32626611724046256,
+        "baseline_mean": 0.16335703841552573,
+        "baseline_sd": 0.002462863062108129,
+        "z": 66.14621873677868,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.1573175594842483,
+        "baseline_max": 0.1698125747707032
+      },
+      "ancestor": {
+        "observed": 0.19121361159112057,
+        "baseline_mean": 0.08866343214143294,
+        "baseline_sd": 0.0018377849204380043,
+        "z": 55.800969041168635,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.08334441047454473,
+        "baseline_max": 0.09351322610660641
+      },
+      "common_ancestor": {
+        "observed": 0.13505250564934201,
+        "baseline_mean": 0.07469360627409279,
+        "baseline_sd": 0.001722129559764996,
+        "z": 35.0489886390928,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.07051708095174797,
+        "baseline_max": 0.07942310248571048
+      }
+    },
+    "2": {
+      "total": {
+        "observed": 0.42017812043067926,
+        "baseline_mean": 0.2540196730027915,
+        "baseline_sd": 0.0033738576504808433,
+        "z": 49.248802006867955,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.24458327794762727,
+        "baseline_max": 0.2617306925428685
+      },
+      "ancestor": {
+        "observed": 0.21381097966236873,
+        "baseline_mean": 0.11138309185165493,
+        "baseline_sd": 0.0020869256003974643,
+        "z": 49.08075677983247,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.10567592715671939,
+        "baseline_max": 0.11637644556692808
+      },
+      "common_ancestor": {
+        "observed": 0.2063671407683105,
+        "baseline_mean": 0.1426365811511365,
+        "baseline_sd": 0.0026757767020405554,
+        "z": 23.81759268946952,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.13558420842748903,
+        "baseline_max": 0.14974079489565334
+      }
+    },
+    "3": {
+      "total": {
+        "observed": 0.45912534892994816,
+        "baseline_mean": 0.29860760334972747,
+        "baseline_sd": 0.003816823756518821,
+        "z": 42.05532029244724,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.28698657450485177,
+        "baseline_max": 0.3085205370198059
+      },
+      "ancestor": {
+        "observed": 0.22225176126545262,
+        "baseline_mean": 0.12073906686162433,
+        "baseline_sd": 0.002205527726969773,
+        "z": 46.026487521559744,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.11544596570517081,
+        "baseline_max": 0.12568124418450086
+      },
+      "common_ancestor": {
+        "observed": 0.23687358766449554,
+        "baseline_mean": 0.1778685364881032,
+        "baseline_sd": 0.0031967736262048757,
+        "z": 18.45768830570639,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.1686162435198724,
+        "baseline_max": 0.18509902964242989
+      }
+    },
+    "any": {
+      "total": {
+        "observed": 0.4873720590190084,
+        "baseline_mean": 0.34172604014355984,
+        "baseline_sd": 0.004863502831816321,
+        "z": 29.946732614742952,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.3287917054366609,
+        "baseline_max": 0.35318357038415527
+      },
+      "ancestor": {
+        "observed": 0.22810049182506978,
+        "baseline_mean": 0.13433736541273428,
+        "baseline_sd": 0.0026342536872638184,
+        "z": 35.59381044645196,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.12674464974079488,
+        "baseline_max": 0.13957197926359166
+      },
+      "common_ancestor": {
+        "observed": 0.25927156719393857,
+        "baseline_mean": 0.20738867473082545,
+        "baseline_sd": 0.004098293535715975,
+        "z": 12.659633091422558,
+        "share_of_runs_at_or_above_observed": 0.0,
+        "baseline_min": 0.1965971022198591,
+        "baseline_max": 0.21693473348398246
+      }
+    }
+  },
+  "mixing_shuffled_merges": {
+    "all_labels_weighted": {
+      "observed": 0.7430228783767087,
+      "baseline_mean": 0.0500836580282739,
+      "baseline_sd": 0.0020266208671154257,
+      "z": 341.9185263471229,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.044509858242636535,
+      "baseline_max": 0.056672954952795805
+    },
+    "all_labels_unweighted": {
+      "observed": 0.7507656822094487,
+      "baseline_mean": 0.046451836379561566,
+      "baseline_sd": 0.0020084241973145835,
+      "z": 350.6798248953626,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.040597982337805816,
+      "baseline_max": 0.05236010490741671
+    },
+    "named_only_weighted": {
+      "observed": 0.9875349257629492,
+      "baseline_mean": 0.05695007833195098,
+      "baseline_sd": 0.0030067767754751117,
+      "z": 309.49582124664147,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.049847649350177124,
+      "baseline_max": 0.06528731155521404
+    },
+    "named_only_unweighted": {
+      "observed": 0.9787976655419652,
+      "baseline_mean": 0.048794250376550614,
+      "baseline_sd": 0.0029400629686240926,
+      "z": 316.3209173035647,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.04165490451520486,
+      "baseline_max": 0.05683124684369063
+    }
+  },
+  "copying_shuffled_merges": {
+    "share_copying": {
+      "observed": 0.4882360760334973,
+      "baseline_mean": 0.03863418848863485,
+      "baseline_sd": 0.0014029195865605754,
+      "z": 320.4758789112889,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.03562408613585006,
+      "baseline_max": 0.04220390801541938
+    },
+    "share_exact_repeat": {
+      "observed": 0.3438787717665825,
+      "baseline_mean": 0.012378040675262526,
+      "baseline_sd": 0.0008585577668426617,
+      "z": 386.11348460617955,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.00970357570118304,
+      "baseline_max": 0.014688289246311312
+    }
+  },
+  "copying_within_family": {
+    "share_copying": {
+      "observed": 0.4882360760334973,
+      "baseline_mean": 0.12078359696929417,
+      "baseline_sd": 0.001978738243115372,
+      "z": 185.70039788874615,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.11524657716336568,
+      "baseline_max": 0.12621294696264787
+    },
+    "share_exact_repeat": {
+      "observed": 0.3438787717665825,
+      "baseline_mean": 0.04911338561743985,
+      "baseline_sd": 0.0013744072449705684,
+      "z": 214.46728197031206,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.04539412468430148,
+      "baseline_max": 0.05317027781470158
+    }
+  },
+  "rewired_cocitation": {
+    "assortativity_all_labels_unweighted": {
+      "observed": 0.7507656822094487,
+      "baseline_mean": -0.0023556849410562245,
+      "baseline_sd": 0.0024883467546833846,
+      "z": 302.65933223857763,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": -0.010565545194008276,
+      "baseline_max": 0.00317330306929069
+    },
+    "assortativity_named_only_unweighted": {
+      "observed": 0.9787976655419652,
+      "baseline_mean": -0.003688961576441623,
+      "baseline_sd": 0.003213397551272274,
+      "z": 305.7469894222745,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": -0.012640031916378244,
+      "baseline_max": 0.00295315096591763
+    },
+    "clustering": {
+      "observed": 0.581482443205213,
+      "baseline_mean": 0.022961879303543674,
+      "baseline_sd": 0.0003525716340709186,
+      "z": 1584.1335772046962,
+      "share_of_runs_at_or_above_observed": 0.0,
+      "baseline_min": 0.0220957547514233,
+      "baseline_max": 0.023644674029181897
+    }
+  }
+}

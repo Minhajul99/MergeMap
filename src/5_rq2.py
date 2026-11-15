@@ -1,0 +1,340 @@
+"""RQ2: who merges with whom, and how often do close relatives merge?
+
+Measures
+    1. cocitation network of merge parents (own code; Topic 2)
+    2. family-to-family merge matrix
+    3. family assortativity (Newman [5]) and modularity Q of the family
+       partition (Topic 5-3) on the cocitation network
+    4. cocitation network compared with a G(n,m) random graph (Topic 5-4)
+    5. inbreeding rate at 1, 2, 3 generations and at any depth (own code)
+    6. the main numbers again with one merge per (author, parent set)
+    7. vertex copying (Topic 5-5): share of merges that reuse most of the
+       parent list of an earlier merge, and the most repeated parent sets
+
+Output
+    results/rq2/cocitation_edges.parquet, rq2_*.csv, rq2_summary.json
+    results/rq2/rq2_*.png
+
+Run from the project root, after 3_build_graph.py:
+
+    python src/5_rq2.py
+"""
+
+import json
+import math
+import random
+from collections import Counter
+
+import igraph as ig
+import numpy as np
+import polars as pl
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, LogNorm
+
+from lib import mixing
+from lib.copying import COPY_THRESHOLD, best_earlier_match, copying_summary
+from lib.paths import results_dir
+from lib.graph_io import load_lineage
+from lib.inbreeding import LEVELS, inbreeding_rates
+from lib.plotstyle import INK, INK_SECONDARY, MUTED, SERIES, apply_style, save
+
+OUT = results_dir("rq2")
+SEED = 6917
+RANDOM_GRAPHS = 100
+summary = {}
+
+apply_style(OUT)
+random.seed(SEED)
+nodes, parents_of, merges = load_lineage()
+name = nodes["name"].to_list()
+family = nodes["family"].to_list()
+author = nodes["author"].to_list()
+print(f"merges with 2+ parents: {len(merges):,}")
+
+
+# ---------------------------------------------------------------------------
+# 1. Cocitation network of merge parents
+# ---------------------------------------------------------------------------
+def cocitation(merge_list):
+    """Weighted cocitation network of the given merges (see mixing.py)."""
+    return mixing.cocitation(merge_list, parents_of)
+
+
+def build_graph(weight):
+    """Undirected weighted igraph graph from a cocitation Counter."""
+    members = sorted({x for pair in weight for x in pair})
+    position = {v: i for i, v in enumerate(members)}
+    g = ig.Graph(n=len(members), edges=[(position[a], position[b]) for a, b in weight], directed=False)
+    g.es["weight"] = list(weight.values())
+    g.vs["node"] = members
+    g.vs["family"] = [family[v] for v in members]
+    return g
+
+
+weight = cocitation(merges)
+cg = build_graph(weight)
+pl.DataFrame({
+    "a": [name[a] for a, _ in weight], "b": [name[b] for _, b in weight],
+    "weight": list(weight.values()),
+}).sort(["weight", "a", "b"], descending=[True, False, False]).write_parquet(f"{OUT}/cocitation_edges.parquet")
+
+n, m = cg.vcount(), cg.ecount()
+total_weight = sum(weight.values())
+summary["cocitation"] = {
+    "nodes": n, "edges": m, "total_weight": total_weight,
+    "mean_degree": 2 * m / n, "max_weight": max(weight.values()),
+}
+print(f"\n[1] cocitation network: {n:,} parents, {m:,} links, total weight {total_weight:,}, "
+      f"mean degree {2 * m / n:.1f}")
+strongest = max(weight, key=weight.get)
+print(f"    strongest pair ({weight[strongest]} merges): {name[strongest[0]]}  +  {name[strongest[1]]}")
+
+
+# ---------------------------------------------------------------------------
+# 2. Family-to-family merge matrix
+# ---------------------------------------------------------------------------
+def mixing_counts(weight, weighted=True):
+    """Count links between every pair of labels (symmetric)."""
+    counts = Counter()
+    for (a, b), w in weight.items():
+        fa, fb = sorted((family[a], family[b]))
+        counts[(fa, fb)] += w if weighted else 1
+    return counts
+
+
+counts = mixing_counts(weight)
+label_strength = Counter()
+for (fa, fb), w in counts.items():
+    label_strength[fa] += w
+    label_strength[fb] += w
+named = [f for f, _ in label_strength.most_common() if f not in ("unknown", "mixed")]
+shown = named[:8] + ["mixed", "unknown"]
+
+
+def shown_label(f):
+    return f if f in shown else "other"
+
+
+labels = shown[:8] + ["other", "mixed", "unknown"]
+matrix = np.zeros((len(labels), len(labels)))
+for (fa, fb), w in counts.items():
+    i, j = labels.index(shown_label(fa)), labels.index(shown_label(fb))
+    matrix[i, j] += w
+    if i != j:
+        matrix[j, i] += w
+pl.DataFrame({"family": labels, **{lab: matrix[:, k].astype(int) for k, lab in enumerate(labels)}}
+             ).write_csv(f"{OUT}/rq2_family_matrix.csv")
+
+same = sum(w for (fa, fb), w in counts.items() if fa == fb)
+print(f"\n[2] cocited pairs with the same label: {same:,} of {total_weight:,} ({100 * same / total_weight:.1f}%)")
+
+blues = LinearSegmentedColormap.from_list("blues", ["#eaf2fd", "#9ec5f4", "#3987e5", "#184f95", "#0d366b"])
+fig, ax = plt.subplots(figsize=(5.4, 4.6))
+masked = np.ma.masked_where(matrix == 0, matrix)
+image = ax.imshow(masked, cmap=blues, norm=LogNorm(vmin=1, vmax=matrix.max()))
+ax.set_xticks(range(len(labels)), labels, rotation=45, ha="right")
+ax.set_yticks(range(len(labels)), labels)
+ax.grid(False)
+for i in range(len(labels)):
+    for j in range(len(labels)):
+        value = int(matrix[i, j])
+        if value:
+            dark = matrix[i, j] > matrix.max() ** 0.5
+            ax.text(j, i, f"{value:,}", ha="center", va="center", fontsize=6,
+                    color="white" if dark else INK)
+ax.set_title("Cocited merge parents, by family")
+fig.colorbar(image, ax=ax, shrink=0.8, label="cocited pairs (weighted, log scale)")
+save(fig, "rq2_family_matrix")
+
+
+# ---------------------------------------------------------------------------
+# 3. Family assortativity and modularity
+# ---------------------------------------------------------------------------
+def mixing_report(pair_weights, label):
+    """Assortativity r and modularity Q four ways (see mixing.py), printed."""
+    report = mixing.mixing_variants(pair_weights, family)
+    print(f"    {label}")
+    for key, value in report.items():
+        print(f"      {key:<24} r = {value['assortativity']:.3f}   Q = {value['modularity_Q']:.3f}   "
+              f"links {value['links']:,}")
+    return report
+
+
+print("\n[3] family assortativity r and modularity Q on the cocitation network:")
+summary["mixing"] = mixing_report(weight, "all merges")
+
+# Cross-check the own formula against igraph on the unweighted graph.
+label_ids = {f: i for i, f in enumerate(sorted(set(cg.vs["family"])))}
+types = [label_ids[f] for f in cg.vs["family"]]
+r_igraph = cg.assortativity_nominal(types, directed=False)
+q_igraph = cg.modularity(types)
+summary["mixing"]["igraph_check_unweighted"] = {"assortativity": r_igraph, "modularity_Q": q_igraph}
+print(f"    igraph cross-check (unweighted, all labels): r = {r_igraph:.3f}   Q = {q_igraph:.3f}")
+
+
+# ---------------------------------------------------------------------------
+# 4. Cocitation network versus a G(n,m) random graph
+# ---------------------------------------------------------------------------
+def structure(g):
+    """Clustering coefficient, giant-component fraction, mean path length in the giant."""
+    giant = g.connected_components().giant()
+    return {
+        "clustering": g.transitivity_undirected(),
+        "giant_fraction": giant.vcount() / g.vcount(),
+        "mean_path_length": giant.average_path_length(),
+    }
+
+
+def giant_fraction_theory(c):
+    """Solve S = 1 - exp(-c S) by repeated substitution (Topic 5-4)."""
+    s = 1.0
+    for _ in range(1000):
+        s = 1 - math.exp(-c * s)
+    return s
+
+
+c = 2 * m / n
+observed = structure(cg)
+samples = [structure(ig.Graph.Erdos_Renyi(n=n, m=m)) for _ in range(RANDOM_GRAPHS)]
+random_mean = {k: float(np.mean([s[k] for s in samples])) for k in observed}
+random_sd = {k: float(np.std([s[k] for s in samples])) for k in observed}
+theory = {
+    "clustering": c / (n - 1),
+    "giant_fraction": giant_fraction_theory(c),
+    "mean_path_length": math.log(n) / math.log(c),
+}
+summary["versus_random_graph"] = {
+    "n": n, "m": m, "mean_degree_c": c, "observed": observed,
+    "gnm_theory": theory, "gnm_sample_mean": random_mean, "gnm_sample_sd": random_sd,
+    "samples": RANDOM_GRAPHS,
+}
+print(f"\n[4] cocitation network vs G(n,m), n = {n:,}, m = {m:,}, mean degree c = {c:.2f}")
+print(f"    {'':<20}{'observed':>10}{'G(n,m) theory':>16}{'G(n,m) sampled':>22}")
+for key in observed:
+    print(f"    {key:<20}{observed[key]:>10.4f}{theory[key]:>16.4f}"
+          f"{random_mean[key]:>14.4f} +- {random_sd[key]:.4f}")
+pl.DataFrame({
+    "measure": list(observed), "observed": list(observed.values()),
+    "gnm_theory": [theory[k] for k in observed],
+    "gnm_sample_mean": [random_mean[k] for k in observed],
+    "gnm_sample_sd": [random_sd[k] for k in observed],
+}).write_csv(f"{OUT}/rq2_versus_random_graph.csv")
+
+
+# ---------------------------------------------------------------------------
+# 5. Inbreeding
+# ---------------------------------------------------------------------------
+def inbreeding_report(merge_list, label):
+    rates = inbreeding_rates([parents_of[v] for v in merge_list], parents_of)
+    print(f"    {label} ({len(merge_list):,} merges)")
+    print(f"      {'related within':<16}{'ancestor type':>14}{'common ancestor':>17}{'total':>8}")
+    for level in LEVELS:
+        r = rates[level]
+        print(f"      {str(level):<16}{100 * r['ancestor']:>13.1f}%{100 * r['common_ancestor']:>16.1f}%"
+              f"{100 * r['total']:>7.1f}%")
+    return {str(level): rates[level] for level in LEVELS}
+
+
+print("\n[5] inbreeding: share of merges with at least one related pair of parents")
+summary["inbreeding"] = inbreeding_report(merges, "all merges")
+
+fig, ax = plt.subplots(figsize=(4.4, 3.2))
+x = np.arange(len(LEVELS))
+ancestor = np.array([100 * summary["inbreeding"][str(level)]["ancestor"] for level in LEVELS])
+common = np.array([100 * summary["inbreeding"][str(level)]["common_ancestor"] for level in LEVELS])
+ax.bar(x, ancestor, width=0.6, color=SERIES[0], edgecolor="white", linewidth=1.5,
+       label="one parent is an ancestor of another")
+ax.bar(x, common, width=0.6, bottom=ancestor, color=SERIES[1], edgecolor="white", linewidth=1.5,
+       label="parents share an ancestor")
+for xi, total in zip(x, ancestor + common):
+    ax.text(xi, total + 1.5, f"{total:.1f}%", ha="center", color=INK_SECONDARY)
+ax.set_xticks(x, ["1", "2", "3", "any depth"])
+ax.set(title="Merges with related parents", xlabel="related within (generations)",
+       ylabel="% of merges", ylim=(0, 100))
+ax.grid(axis="x", visible=False)
+ax.legend(loc="upper left")
+save(fig, "rq2_inbreeding")
+
+
+# ---------------------------------------------------------------------------
+# 6. The same numbers with one merge per (author, parent set)
+# ---------------------------------------------------------------------------
+seen = set()
+unique_merges = []
+for v in merges:
+    key = (author[v], frozenset(parents_of[v]))
+    if key not in seen:
+        seen.add(key)
+        unique_merges.append(v)
+by_author = Counter(author[v] for v in merges)
+top_authors = by_author.most_common(5)
+print(f"\n[6] one merge per (author, parent set): {len(unique_merges):,} of {len(merges):,} merges kept")
+print(f"    merge authors: {len(by_author):,}; the 10 most active made "
+      f"{100 * sum(c for _, c in by_author.most_common(10)) / len(merges):.1f}% of merges")
+print(f"    most active: {', '.join(f'{a} ({c})' for a, c in top_authors)}")
+summary["deduplicated"] = {
+    "merges_kept": len(unique_merges),
+    "authors": len(by_author),
+    "top10_author_share": sum(c for _, c in by_author.most_common(10)) / len(merges),
+    "mixing": mixing_report(cocitation(unique_merges), "deduplicated merges"),
+    "inbreeding": inbreeding_report(unique_merges, "deduplicated merges"),
+}
+
+# ---------------------------------------------------------------------------
+# 7. Vertex copying (Topic 5-5): do new merges reuse earlier parent lists?
+# ---------------------------------------------------------------------------
+created = nodes["createdAt"].to_list()
+matches = best_earlier_match(merges, parents_of, created)
+copy_stats = copying_summary(matches, author)
+summary["copying"] = copy_stats
+print(f"\n[7] copying: best match of each merge with an earlier merge (Jaccard of parent sets)")
+print(f"    shares at least two parents with an earlier merge: {100 * copy_stats['share_two_shared_parents']:.1f}%")
+print(f"    copies (Jaccard >= {COPY_THRESHOLD}): {100 * copy_stats['share_copying']:.1f}%, "
+      f"of which by the same author: {100 * copy_stats['copies_by_same_author']:.1f}%")
+print(f"    copies another author's recipe: {100 * copy_stats['share_copying_another_author']:.1f}% of all merges")
+print(f"    exact repeat of an earlier parent set: {100 * copy_stats['share_exact_repeat']:.1f}%")
+
+recipes = {}
+for v in merges:
+    recipes.setdefault(frozenset(parents_of[v]), []).append(v)
+repeated = sorted((vs for vs in recipes.values() if len(vs) >= 2),
+                  key=lambda vs: (-len(vs), min(created[v] for v in vs)))
+pl.DataFrame({
+    "merges": [len(vs) for vs in repeated[:20]],
+    "authors": [len({author[v] for v in vs}) for vs in repeated[:20]],
+    "first_created": [str(min(created[v] for v in vs))[:10] for vs in repeated[:20]],
+    "parents": [" + ".join(sorted(name[p] for p in parents_of[vs[0]])) for vs in repeated[:20]],
+}).write_csv(f"{OUT}/rq2_repeated_recipes.csv")
+summary["copying"]["parent_sets_used_by_2plus_merges"] = len(repeated)
+summary["copying"]["merges_on_a_reused_parent_set"] = sum(len(vs) for vs in repeated)
+print(f"    parent sets used by two or more merges: {len(repeated):,}, "
+      f"covering {sum(len(vs) for vs in repeated):,} merges")
+
+best_j = np.array([j for _, j, _ in matches])
+same = np.array([m is not None and author[v] == author[m] for v, _, m in matches])
+groups = [("no earlier merge shares 2 parents", best_j == 0),
+          ("some overlap (J < 0.5)", (best_j > 0) & (best_j < COPY_THRESHOLD)),
+          ("copies most parents (0.5 <= J < 1)", (best_j >= COPY_THRESHOLD) & (best_j < 1)),
+          ("exact repeat (J = 1)", best_j == 1)]
+fig, ax = plt.subplots(figsize=(5.4, 2.6))
+y = np.arange(len(groups))[::-1]
+for k, (yi, (label, mask)) in enumerate(zip(y, groups)):
+    if k == 0:                       # no match at all: there is no author to compare
+        total = 100 * mask.sum() / len(matches)
+        ax.barh(yi, total, color=MUTED, height=0.6)
+        ax.text(total + 0.8, yi, f"{total:.1f}%", va="center", fontsize=7, color=INK_SECONDARY)
+        continue
+    own = 100 * (mask & same).sum() / len(matches)
+    other = 100 * (mask & ~same).sum() / len(matches)
+    ax.barh(yi, other, color=SERIES[0], height=0.6, label="another author" if k == 1 else None)
+    ax.barh(yi, own, left=other, color=SERIES[1], height=0.6, label="same author" if k == 1 else None)
+    ax.text(own + other + 0.8, yi, f"{own + other:.1f}%", va="center", fontsize=7, color=INK_SECONDARY)
+ax.set_yticks(y, [g[0] for g in groups], fontsize=7.5)
+ax.set(title="Each merge against its closest earlier merge", xlabel="% of merges", xlim=(0, 60))
+ax.grid(axis="y", visible=False)
+ax.legend(loc="lower right", fontsize=7, title="closest earlier merge by", title_fontsize=7)
+save(fig, "rq2_copying")
+
+with open(f"{OUT}/rq2_summary.json", "w", encoding="utf-8") as f:
+    json.dump(summary, f, indent=2)
+print(f"\nsaved {OUT}/rq2_summary.json")

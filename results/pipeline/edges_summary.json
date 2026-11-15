@@ -1,0 +1,23 @@
+{
+  "raw_rows": 3177876,
+  "models": 3177863,
+  "duplicate_rows_removed": 13,
+  "models_declaring_a_base": 902519,
+  "raw_edges": 935443,
+  "self_loops_removed": 2072,
+  "edges_to_ghost_parents": 14006,
+  "ghost_parents": 3431,
+  "newer_parent_edges_removed": 3430,
+  "duplicate_edges_removed": 0,
+  "clean_edges": 929941,
+  "children": 897221,
+  "graph_nodes": 942088,
+  "merges_with_2plus_parents": 15046,
+  "non_merge_models_with_2plus_parents": 0,
+  "edges_by_relation": {
+    "finetune": 358180,
+    "adapter": 332026,
+    "quantized": 191705,
+    "merge": 48030
+  }
+}

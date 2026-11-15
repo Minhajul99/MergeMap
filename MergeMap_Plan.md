@@ -5,14 +5,29 @@ COMP 6917 Complex Networks. Created Nov 12, 2026. Revised Nov 12, 2026 against t
 **Rule for this plan:** metrics and algorithms come from the lectures (Topics 0–5), with two exceptions kept from the submitted proposal by decision on Nov 12, 2026: **family assortativity** and **degree-preserving random graphs**. Both are in the reference book (Newman [5]); cite it when they are used. Nothing else from outside the lectures is added.
 
 **Deadlines (from `Project_Regulation.pdf`):**
-- Nov 27 or Dec 7, in class: 10-minute demo plus 2-minute Q/A.
+- Nov 25, in class (moved from Nov 27): 10-minute demo plus 2-minute Q/A.
 - Dec 7, 11:59 pm: report (8 pages maximum, LaTeX PDF preferred) and a zip with code, data, processed metric data and a readme.
 
-**"Steps 1–4" means the first four steps of the course workflow:** 1 data set, 2 graph model, 3 metrics, 4 algorithms implemented. Steps 5–6 (knowledge, understanding) are for the report. So by Nov 27 every algorithm must run, but the interpretation can still be rough.
+**"Steps 1–4" means the first four steps of the course workflow:** 1 data set, 2 graph model, 3 metrics, 4 algorithms implemented. Steps 5–6 (knowledge, understanding) are for the report. So by Nov 25 every algorithm must run, but the interpretation can still be rough.
 
 **Marks:** the report is 20 of 40, graded on "quality and novelty of the knowledge discovered". Findings matter more than the number of metrics.
 
 ---
+
+## Project layout (reorganised Nov 14, 2026)
+
+Earlier sections name scripts and folders by their old names. They map as follows:
+
+| Old | New |
+|---|---|
+| `src/download.py`, `build_edges.py`, `build_graph.py` | `src/1_download.py`, `2_build_edges.py`, `3_build_graph.py` |
+| `src/rq1.py` … `rq4.py`, `baseline.py` | `src/4_rq1.py` … `7_rq4.py`, `8_baseline.py` |
+| helper modules in `src/` | `src/lib/` |
+| `data/processed/nodes, edges, graph_nodes` | `data/graph/` |
+| `data/processed/rqN_*`, `figures/rqN_*.png` | `results/rqN/` (and `results/baseline/`) |
+| `stats.py`, `src/peek.py` | `notebooks/` |
+
+New: `MergeMap.py` runs everything (`--quick` skips the two slow steps, `--page` only rebuilds the page), saves each step's printout to `results/<step>/log.txt`, and builds `results/index.html`, a results viewer: one view per step with its key numbers, figures, sortable tables, every number from its summary JSON and its terminal output, plus an overview of the last run and the built-in checks. It is not a presentation; new files in a results folder appear in it automatically. `README.md` explains how to run the project. Results are unchanged by the move: every summary and table was compared with the version before it.
 
 ## Part A: Lecture coverage
 
@@ -316,14 +331,37 @@ Both baselines are degree-preserving random graphs, as the proposal says. About 
 - [x] Mixing: degree-preserving rewiring of the cocitation graph with `rewire()`. Recompute family assortativity on each run. Report the real value against the mean and spread, as a z-score.
 - [x] Inbreeding: shuffle the parent column of the merge-child-to-parent table, so every parent keeps its merge count and every child keeps its parent count. Reject a swap that gives a child the same parent twice or a parent newer than the child. Rerun the depth 0–3 search on each run. Report z-scores.
 
-## Phase 8: Buffer (Nov 24–25)
+## Extension: network formation (Topic 5-5, added Nov 15)
 
-- [ ] Catch up. No new work.
+Not in the proposal; an extension using the newest lecture. It explains why the hubs and cliques found in RQ1–RQ3 form. Code: section 7 of `src/4_rq1.py`, section 7 of `src/5_rq2.py`, `src/lib/copying.py`, and copying added to both shuffles in `src/8_baseline.py`. Existing results are unchanged: every earlier number was compared after the run.
 
-## Phase 9: Demo (Nov 26–27)
+- [x] **Preferential attachment.** All 929,941 edges replayed in order of the child's creation date. Attachment rate R(k) = chance per event that a given model with k children gets the next child. Log-binned, fitted for 1 ≤ k < 4,096: **R(k) ∝ k^1.01**, almost exactly linear preferential attachment (Price's model, Barabási–Albert). Above about 10,000 children the rate flattens: the largest hubs get 0.26× what the line predicts.
+- [x] **Price's model check.** Price predicts α = 2 + a/c ≥ 2 (c = 1.036 parents per new model). The observed tail exponent is 1.92 (cumulative slope; 1.86 with the `powerlaw` package), slightly below that bound. Fitting a directly was unstable (the smallest bins give a negative a), so only the bound is reported. Possible reasons: growth is not steady (the Hub grows fast), and new hubs appear late.
+- [x] **Age vs children.** Spearman 0.046 over all dated models, 0.079 over models with children: age barely predicts popularity, against the "older are richer" prediction of Barabási–Albert. Models with 100 or more children gain only 14.6% (median) of their children in their first 90 days, so hubs grow steadily, not in one burst. Together with the linear R(k): attachment is preferential, but which model becomes a hub is not decided by age (the lecture's "not all vertices are created equal" extension).
+- [x] **Vertex copying in merges.** For each merge, the earlier merge with the most similar parent set (Jaccard, at least two shared parents). **48.8%** of merges copy most of an earlier merge's parents (J ≥ 0.5) and **34.4%** repeat an earlier parent set exactly. 68.6% of copies are by the same author (re-running a recipe, for example with another merge method); 15.3% of all merges copy another author's recipe. 1,847 parent sets are used by two or more merges, covering 7,022 merges. One recipe was used by 223 merges from a single author (a Mistral set), which explains the dense Mistral clique in the cocitation network; another (OpenPipe/mistral-ft-optimized-1218 + NeuralHermes-2.5-Mistral-7B) was used by 143 merges from 127 different authors.
+- [x] **Copying against the baselines.** Shuffled merges give 3.9% copying, shuffled within families 12.1% (observed 48.8%); exact repeats 1.2% and 4.9% (observed 34.4%). Copying is four times the within-family chance level.
+- [x] Results viewer shows the new numbers; new figures `results/rq1/rq1_growth.png`, `results/rq2/rq2_copying.png`; new tables `rq1_attachment_rate.csv`, `rq2_repeated_recipes.csv`.
 
-- [ ] 10 minutes: data set, graph model, metrics, algorithms running, first findings. One slide listing the changes from the proposal (Part B).
+Caution for the report: a linear R(k) is also what models with built-in differences in "fitness" can produce when measured this way; the test supports preferential attachment but does not rule out fitness. Copying and inbreeding overlap: an exact repeat of an inbred recipe counts in both.
+
+## Phase 8: Buffer
+
+- [x] Not needed: Phases 1–7 were finished by Nov 14, ahead of schedule.
+
+## Phase 9: Demo (Nov 25)
+
+The demo date moved from Nov 27 to **Nov 25** (told Nov 14). Slides ready by Nov 22, rehearsal Nov 23–24.
+
+Decision (Nov 14): the demo shows the complete project, all six workflow steps with results for RQ1–RQ4 and the baselines. Only the written report is left for Dec 7.
+
+- [ ] About 10 slides, 10 minutes: problem, data set, graph model, changes from the proposal (Part B), RQ1, RQ2, RQ3, RQ4, baselines, takeaways and limitations. One key figure and one key number per research question.
+- [ ] Speaker notes with timing for every slide.
+- [ ] One short live run (`python MergeMap.py --quick`, about 1 minute) from your own laptop, then open `results/index.html`. Keep a screenshot of the run and the page on a backup slide.
+- [ ] Prepared answers for likely questions: the 23% unknown merge parents, why the z-scores are so large, how family labels were chosen, why the stricter within-family baseline was added.
+- [ ] Rehearse once against a timer.
 - [ ] Slides are graded on technical content, storytelling, idea delivery and slide quality.
+
+Alongside (done Nov 14): `README.md` written, `stats.py` and `src/peek.py` moved to `notebooks/`, `.env` added to `.gitignore`.
 
 ## Phase 10: Report and submission (Nov 28–Dec 7)
 

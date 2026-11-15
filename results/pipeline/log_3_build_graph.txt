@@ -1,0 +1,51 @@
+nodes: 942,088   edges: 929,941
+cycle check: no cycles, the graph is a DAG
+roots: 44,867   deepest lineage: 151 generations
+saved data\graph\graph_nodes.parquet
+
+roots with a named family: 21,165 of 44,867 (47.2%)
+non-root models by label (897,221 in total):
+  qwen                249,015  27.8%
+  unknown             131,574  14.7%
+  llama               104,203  11.6%
+  gemma                85,641  9.5%
+  bert                 54,887  6.1%
+  flux                 46,217  5.2%
+  mistral              44,174  4.9%
+  stable-diffusion     21,318  2.4%
+  smollm               16,251  1.8%
+  whisper              15,829  1.8%
+  roberta              13,973  1.6%
+  phi                  12,918  1.4%
+  t5                   10,062  1.1%
+  vit                   8,946  1.0%
+  gpt2                  8,862  1.0%
+merges with 2+ parents: 15,046
+distinct merge parents: 10,125, labelled unknown: 2,378 (23.5%)
+largest unknown roots:
+   3,465  KBlueLeaf/kohaku-xl-beta5
+   2,729  mlabonne/Marcoro14-7B-slerp
+   2,668  fblgit/UNA-TheBeagle-7b-v1
+   2,381  PetroGPT/WestSeverus-7B-DPO-v2
+   2,307  FelixChao/Sectumsempra-7B-DPO
+   2,060  liminerity/M7-7b
+   1,896  yam-peleg/Experiment26-7B
+   1,876  TheDrummer/Rocinante-12B-v1
+   1,737  yam-peleg/Experiment28-7B
+   1,664  yam-peleg/Experiment24-7B
+   1,629  flemmingmiguel/MBX-7B-v3
+   1,493  NeverSleep/Lumimaid-v0.2-12B
+   1,492  leveldevai/TurdusBeagle-7B
+   1,464  AiMavenAi/AiMaven-Prometheus
+   1,456  microsoft/speecht5_tts
+   1,442  lodrick-the-lafted/Olethros-8B
+   1,422  Endevor/InfinityRP-v2-8B
+   1,416  bunnycore/Cognitron-8B
+   1,406  Elizezen/Himeyuri-v0.1-12B
+   1,405  samir-fama/FernandoGPT-v1
+   1,292  Laxhar/noobai-XL-1.0
+   1,271  eren23/dpo-binarized-NeutrixOmnibe-7B
+   1,265  eren23/dpo-binarized-NeuralTrix-7B
+   1,196  intervitens/mini-magnum-12b-v1.1
+   1,196  Epiculous/Violet_Twilight-v0.2
+saved results/pipeline/graph_summary.json

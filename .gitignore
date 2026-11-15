@@ -1,8 +1,8 @@
-# Raw data (1.6 GB, fetched by download script)
+# Raw data (1.6 GB, fetched by src/1_download.py)
 data/raw/
 
-# Node table (131 MB, rebuilt by src/build_edges.py)
-data/processed/nodes.parquet
+# Node table (131 MB, rebuilt by src/2_build_edges.py)
+data/graph/nodes.parquet
 
 # Python virtual environment
 mergemap/
@@ -10,3 +10,6 @@ mergemap/
 # Python cache
 __pycache__/
 *.pyc
+
+# Local secrets, never commit
+.env

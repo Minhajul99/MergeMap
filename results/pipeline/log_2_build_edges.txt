@@ -1,0 +1,35 @@
+nodes: 3177863
+raw edges: 935443
+shape: (4, 2)
+┌───────────┬────────┐
+│ relation  ┆ len    │
+│ ---       ┆ ---    │
+│ str       ┆ u32    │
+╞═══════════╪════════╡
+│ finetune  ┆ 361478 │
+│ adapter   ┆ 332515 │
+│ quantized ┆ 193207 │
+│ merge     ┆ 48243  │
+└───────────┴────────┘
+self-loops removed: 2072
+edges to ghost parents: 14006 | distinct ghost parents: 3431
+parent-newer-than-child removed: 3430
+duplicate edges removed: 0
+
+clean edges: 929941
+distinct children: 897221
+distinct nodes in graph: 942088
+merges with 2+ parents: 15046
+non-merge models with 2+ parents: 0
+shape: (4, 2)
+┌───────────┬────────┐
+│ relation  ┆ len    │
+│ ---       ┆ ---    │
+│ str       ┆ u32    │
+╞═══════════╪════════╡
+│ finetune  ┆ 358180 │
+│ adapter   ┆ 332026 │
+│ quantized ┆ 191705 │
+│ merge     ┆ 48030  │
+└───────────┴────────┘
+saved results/pipeline/edges_summary.json

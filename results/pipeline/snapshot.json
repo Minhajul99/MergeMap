@@ -1,0 +1,10 @@
+{
+  "repo_id": "cfahlgren1/hub-stats",
+  "file": "models.parquet",
+  "revision": "1a8f69d167bd1442c6a31fee5b818e86fc6ae4f7",
+  "uploaded": "2026-10-22 13:31 UTC",
+  "sha256": "35cb53dfd7847502d3bf7041c080a2468513af44d464f5b7f0028ffea20de738",
+  "sha256_matches": true,
+  "bytes": 1635955091,
+  "licence": "Apache-2.0"
+}

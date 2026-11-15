@@ -1,0 +1,55 @@
+merges with 2+ parents: 15,046
+
+[1] cocitation network: 10,125 parents, 47,300 links, total weight 112,141, mean degree 9.3
+    strongest pair (247 merges): mistralai/Mistral-7B-v0.1  +  mistralai/Mistral-7B-Instruct-v0.2
+
+[2] cocited pairs with the same label: 90,383 of 112,141 (80.6%)
+saved results/rq2/rq2_family_matrix.png
+
+[3] family assortativity r and modularity Q on the cocitation network:
+    all merges
+      all_labels_weighted      r = 0.743   Q = 0.561   links 47,300
+      all_labels_unweighted    r = 0.751   Q = 0.574   links 47,300
+      named_only_weighted      r = 0.988   Q = 0.678   links 34,109
+      named_only_unweighted    r = 0.979   Q = 0.685   links 34,109
+    igraph cross-check (unweighted, all labels): r = 0.751   Q = 0.574
+
+[4] cocitation network vs G(n,m), n = 10,125, m = 47,300, mean degree c = 9.34
+                          observed   G(n,m) theory        G(n,m) sampled
+    clustering              0.5815          0.0009        0.0009 +- 0.0001
+    giant_fraction          0.6170          0.9999        0.9999 +- 0.0001
+    mean_path_length        6.3915          4.1272        4.3832 +- 0.0013
+
+[5] inbreeding: share of merges with at least one related pair of parents
+    all merges (15,046 merges)
+      related within   ancestor type  common ancestor   total
+      1                        19.1%            13.5%   32.6%
+      2                        21.4%            20.6%   42.0%
+      3                        22.2%            23.7%   45.9%
+      any                      22.8%            25.9%   48.7%
+saved results/rq2/rq2_inbreeding.png
+
+[6] one merge per (author, parent set): 10,993 of 15,046 merges kept
+    merge authors: 1,840; the 10 most active made 32.5% of merges
+    most active: MaziyarPanahi (949), mergekit-community (873), zelk12 (732), John6666 (675), TareksGraveyard (352)
+    deduplicated merges
+      all_labels_weighted      r = 0.734   Q = 0.552   links 47,300
+      all_labels_unweighted    r = 0.751   Q = 0.574   links 47,300
+      named_only_weighted      r = 0.986   Q = 0.678   links 34,109
+      named_only_unweighted    r = 0.979   Q = 0.685   links 34,109
+    deduplicated merges (10,993 merges)
+      related within   ancestor type  common ancestor   total
+      1                        20.4%            14.7%   35.1%
+      2                        22.9%            23.2%   46.0%
+      3                        23.8%            26.8%   50.6%
+      any                      24.4%            29.5%   53.8%
+
+[7] copying: best match of each merge with an earlier merge (Jaccard of parent sets)
+    shares at least two parents with an earlier merge: 56.5%
+    copies (Jaccard >= 0.5): 48.8%, of which by the same author: 68.6%
+    copies another author's recipe: 15.3% of all merges
+    exact repeat of an earlier parent set: 34.4%
+    parent sets used by two or more merges: 1,847, covering 7,022 merges
+saved results/rq2/rq2_copying.png
+
+saved results/rq2/rq2_summary.json
