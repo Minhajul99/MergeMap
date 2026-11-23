@@ -1,6 +1,6 @@
 {
-  "started": "2026-11-15T11:49:42",
-  "finished": "2026-11-15T12:03:23",
+  "started": "2026-11-15T12:17:49",
+  "finished": "2026-11-15T12:36:38",
   "mode": "full",
   "python": "3.13.9",
   "steps": [
@@ -8,57 +8,57 @@
       "script": "1_download.py",
       "description": "check the pinned data snapshot",
       "status": "ok",
-      "seconds": 1.9,
-      "ran_at": "2026-11-15T11:49:44"
+      "seconds": 1.5,
+      "ran_at": "2026-11-15T12:17:51"
     },
     {
       "script": "2_build_edges.py",
       "description": "build the node table and clean the edges",
       "status": "ok",
-      "seconds": 3.1,
-      "ran_at": "2026-11-15T11:49:48"
+      "seconds": 2.9,
+      "ran_at": "2026-11-15T12:17:54"
     },
     {
       "script": "3_build_graph.py",
       "description": "build the lineage graph and family labels",
       "status": "ok",
-      "seconds": 19.1,
-      "ran_at": "2026-11-15T11:50:07"
+      "seconds": 18.9,
+      "ran_at": "2026-11-15T12:18:13"
     },
     {
       "script": "4_rq1.py",
       "description": "RQ1 structure",
       "status": "ok",
-      "seconds": 16.4,
-      "ran_at": "2026-11-15T11:50:23"
+      "seconds": 23.8,
+      "ran_at": "2026-11-15T12:18:37"
     },
     {
       "script": "5_rq2.py",
       "description": "RQ2 mixing and inbreeding",
       "status": "ok",
-      "seconds": 346.6,
-      "ran_at": "2026-11-15T11:56:10"
+      "seconds": 523.7,
+      "ran_at": "2026-11-15T12:27:20"
     },
     {
       "script": "6_rq3.py",
       "description": "RQ3 hubs and bridges",
       "status": "ok",
-      "seconds": 17.9,
-      "ran_at": "2026-11-15T11:56:28"
+      "seconds": 19.1,
+      "ran_at": "2026-11-15T12:27:39"
     },
     {
       "script": "7_rq4.py",
       "description": "RQ4 reach and audit coverage",
       "status": "ok",
-      "seconds": 14.3,
-      "ran_at": "2026-11-15T11:56:42"
+      "seconds": 16.3,
+      "ran_at": "2026-11-15T12:27:56"
     },
     {
       "script": "8_baseline.py",
       "description": "random baselines",
       "status": "ok",
-      "seconds": 400.8,
-      "ran_at": "2026-11-15T12:03:23"
+      "seconds": 522.1,
+      "ran_at": "2026-11-15T12:36:38"
     }
   ]
 }
