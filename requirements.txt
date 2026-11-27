@@ -1,0 +1,8 @@
+polars==2.1.0
+pyarrow==26.0.1
+python-igraph==1.0.0
+leidenalg==0.12.0
+numpy==2.5.4
+matplotlib==3.11.2
+huggingface_hub==2.4.0
+powerlaw==2.0.0

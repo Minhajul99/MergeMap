@@ -1,7 +1,7 @@
 """Step 2: build the node table and the cleaned edge list from the raw snapshot.
 
 Output
-    data/graph/nodes.parquet           every model in the snapshot (not in git, 131 MB)
+    data/graph/nodes.parquet           every model in the snapshot (not in git, 95 MB)
     data/graph/edges.parquet           cleaned child -> parent edges
     results/pipeline/edges_summary.json   the counts printed below
 
