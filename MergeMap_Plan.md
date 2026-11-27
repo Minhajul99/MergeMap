@@ -354,14 +354,19 @@ The demo date moved from Nov 27 to **Nov 25** (told Nov 14). Slides ready by Nov
 
 Decision (Nov 14): the demo shows the complete project, all six workflow steps with results for RQ1–RQ4 and the baselines. Only the written report is left for Dec 7.
 
-- [ ] About 10 slides, 10 minutes: problem, data set, graph model, changes from the proposal (Part B), RQ1, RQ2, RQ3, RQ4, baselines, takeaways and limitations. One key figure and one key number per research question.
-- [ ] Speaker notes with timing for every slide.
+- [x] About 10 slides, 10 minutes (done Nov 23: `presentation/MergeMap_Demo.pptx`, 13 main slides plus 3 backup slides, built by `presentation/build_deck.js`): problem, data set, graph model, changes from the proposal (Part B), RQ1, RQ2, RQ3, RQ4, baselines, takeaways and limitations. One key figure and one key number per research question.
+- [x] Speaker notes with timing for every slide.
 - [ ] One short live run (`python MergeMap.py --quick`, about 1 minute) from your own laptop, then open `results/index.html`. Keep a screenshot of the run and the page on a backup slide.
-- [ ] Prepared answers for likely questions: the 23% unknown merge parents, why the z-scores are so large, how family labels were chosen, why the stricter within-family baseline was added.
+- [x] Prepared answers for likely questions (backup slide 15): the 23% unknown merge parents, why the z-scores are so large, how family labels were chosen, why the stricter within-family baseline was added.
 - [ ] Rehearse once against a timer.
 - [ ] Slides are graded on technical content, storytelling, idea delivery and slide quality.
 
 Alongside (done Nov 14): `README.md` written, `stats.py` and `src/peek.py` moved to `notebooks/`, `.env` added to `.gitignore`.
+
+### Deck notes
+
+- Speaker notes are read from `presentation/speaker_script_new.txt` when the deck is built, so the script can be edited as text and the deck rebuilt with `node presentation/build_deck.js`.
+- Slide 11 (audit coverage): checked Nov 23. The 52% is correct (top 100); the highest point on the line is the top 1,000 at 78%. Kept as is by decision.
 
 ## Phase 10: Report and submission (Nov 28–Dec 7)
 

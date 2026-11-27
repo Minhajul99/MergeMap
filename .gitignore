@@ -1,7 +1,7 @@
 # Raw data (1.6 GB, fetched by src/1_download.py)
 data/raw/
 
-# Node table (131 MB, rebuilt by src/2_build_edges.py)
+# Node table (95 MB, rebuilt by src/2_build_edges.py)
 data/graph/nodes.parquet
 
 # Python virtual environment
@@ -13,3 +13,6 @@ __pycache__/
 
 # Local secrets, never commit
 .env
+
+# Presentation build tools
+presentation/node_modules/

@@ -1,0 +1,47 @@
+MergeMap demo: speaker script (new, shorter version)
+Source: MergeMap_Demo.pptx
+
+Slide 1: MergeMap (cover)
+[0:00-0:25] Hugging Face hosts over three million AI models. Most are built from a few base models, so they form family trees. A merged model blends two or more parents, so it can join different trees. This project asks what merges do to those families. The picture behind me is real data: each dot is a model that merges use as a parent, coloured by family.
+
+Slide 2: 3.2 million models. Most have a parent.
+[0:25-0:55] One snapshot of Hugging Face: 3.2 million models. 28% declare a parent, which gives a graph of 942,088 models. Almost all edges are fine-tunes, adapters and quantized copies. Merges, in amber, are a thin slice, and the story is about that slice.
+
+Slide 3: Every model points to the model it came from
+[0:55-1:35] A node is a model; an edge points to the model it was built from. Only merges have more than one parent, so without them the graph is a forest of separate trees. Each tree gets a family from its root's name, from a list of 41. Impossible links were removed; deleted parents are kept so families stay whole.
+
+Slide 4: 1.7% of models fuse the families together
+[1:35-2:15] RQ1: do merges connect families? Merges are only 1.7% of models. Without them, the largest group has 43,660 models; with them, 418,549: 9.6 times bigger, with 28 families in one piece. Lineages grow from 39 to 151 generations. But one merge is enough to join two trees, so this shows connection, not strength.
+
+Slide 5: But merging stays inside the family
+[2:15-2:50] RQ2: who merges with whom? Here are the most-used merge parents again: two models are linked when merges use them together. The clusters are families, and lines between clusters are rare. Family assortativity among named families is 0.98, where 1 would mean merges never cross a family. 80.6% of parent pairs share a family. So merges connect the ecosystem through a few bridges, not by mixing families. That makes sense: weights of different architectures cannot simply be averaged.
+
+Slide 6: Close relatives merge 2× as often as chance
+[2:50-3:35] Are the parents of a merge close relatives? Here is one real merge. B is an adapter trained on A, and the merge blends A with B, so A is both parent and grandparent. 32.6% of merges join parents this close. Rewiring the merges 100 times within families gives only 16.3%. So close relatives merge twice as often as chance.
+
+Slide 7: Recipes get copied
+[3:35-4:15] Why so inbred? Copying, as in the vertex-copying model from the network formation lecture. 48.8% of merges reuse at least half of an earlier merge's parents; chance gives 12.1%. One recipe was used 223 times by one author: that is the dense amber cluster. Another was copied by 127 different people.
+
+Slide 8: A few base models hold the kingdom
+[4:15-4:55] RQ3: hubs and bridges. The hubs are official base models: FLUX, small Qwen models, Gemma. Just 94 models hold 42.1% of all edges. The bridges are different: merges are 1.6% of models but hold 82.6% of betweenness, because they sit on the paths between generations.
+
+Slide 9: The rich get richer
+[4:55-5:40] Why do hubs form? I replayed every edge in creation order and measured how likely a model with k children is to get the next one. On log axes the points follow a straight line: the exponent is 1.01. That is linear preferential attachment: the rich get richer. But age barely matters: the correlation with age is only 0.08.
+
+Slide 10: One flawed base. How far does it spread?
+[5:40-6:20] RQ4: if a base model has a flaw, how far does it spread? Each block is a base model; its height is its descendants, and amber is what merges add. Merges add 31.7% more links, mostly on Llama and Mistral. 30,147 models inherit from two or more bases, up to 128. This assumes a merge inherits fully from every parent.
+
+Slide 11: Audit 100 models, cover half the ecosystem
+[6:20-6:55] So where should an auditor look first? Checking the top 100 models by PageRank, and everything built from them, covers 52% of the graph. A hundred random models cover 0.2%. That is hub versus random failure, from the large-scale networks lecture.
+
+Slide 12: One command reproduces everything
+[6:55-7:35] Everything is reproducible with one script, MergeMap.py. Built-in checks run every time: the data hash, no cycles, PageRank against my Assignment 3 code, assortativity against igraph. Two full runs give identical results. (Only if time allows: python MergeMap.py --quick takes about a minute; otherwise just show results/index.html.)
+
+Slide 13: The ending
+[7:35-8:05] Three things to remember. One: merges are rare, under two percent, but they fuse the ecosystem into one giant family. Two: they stay inside families, merge close relatives twice as often as chance, and copy each other's recipes four times as often. Three: popularity grows rich-get-richer, so auditing the top 100 models covers half the ecosystem.
+
+Slide 14: What this cannot tell us
+[8:05-8:40] Some limits. Lineage is self-declared, so every count is a lower bound. A quarter of merge parents have no known family. RQ4 assumes full inheritance, and this is one snapshot. Some patterns are partly built in, and the attachment result supports preferential attachment without proving it.
+
+Slide 15: Thank you
+[8:40] Thank you. I'm happy to take questions. If asked: unknown families = names that reveal no family (root-level results need no labels); large z-scores = the random baselines barely vary, so the size of the gap is the finding; within-family baseline = models of different architectures cannot be merged.

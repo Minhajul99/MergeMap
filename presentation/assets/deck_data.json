@@ -1,0 +1,364 @@
+{
+  "snapshot": {
+    "date": "2026-10-22",
+    "commit": "1a8f69d167"
+  },
+  "models": 3177863,
+  "declaring_base": 902519,
+  "graph_nodes": 942088,
+  "graph_edges": 929941,
+  "roots": 44867,
+  "edges_by_relation": {
+    "finetune": 358180,
+    "adapter": 332026,
+    "quantized": 191705,
+    "merge": 48030
+  },
+  "merges": 15046,
+  "merge_models": 15310,
+  "merge_share_of_linked": 0.016963631790577263,
+  "largest_without": 43660,
+  "largest_with": 418549,
+  "components_without": 60177,
+  "components_with": 41637,
+  "depth_without": 39,
+  "depth_with": 151,
+  "families_in_giant": 28,
+  "alpha": 1.9232326603709171,
+  "top_0_01_share": 0.42052990458534467,
+  "top_0_01_models": 94,
+  "assort_named": 0.9787976655419652,
+  "assort_all": 0.7430228783767087,
+  "same_label_share": 0.8059764047047913,
+  "inbred": {
+    "1": 0.32626611724046256,
+    "2": 0.42017812043067926,
+    "3": 0.45912534892994816,
+    "any": 0.4873720590190084
+  },
+  "inbred_within_family": {
+    "1": 0.16335703841552573,
+    "2": 0.2540196730027915,
+    "3": 0.29860760334972747,
+    "any": 0.34172604014355984
+  },
+  "inbred_shuffled": {
+    "1": 0.052670477203243395,
+    "2": 0.10572976206300679,
+    "3": 0.13802339492223847,
+    "any": 0.16604147281669543
+  },
+  "copying": {
+    "merges": 15046,
+    "share_copying": 0.4882360760334973,
+    "share_exact_repeat": 0.3438787717665825,
+    "share_two_shared_parents": 0.5654659045593513,
+    "copies_by_same_author": 0.6864960522733461,
+    "share_copying_another_author": 0.1530639372590722,
+    "parent_sets_used_by_2plus_merges": 1847,
+    "merges_on_a_reused_parent_set": 7022
+  },
+  "copying_within_family": 0.12078359696929417,
+  "copying_shuffled": 0.03863418848863485,
+  "repeat_within_family": 0.04911338561743985,
+  "top_recipe": {
+    "merges": 223,
+    "authors": 1
+  },
+  "crowd_recipe": {
+    "merges": 143,
+    "authors": 127,
+    "parents": "OpenPipe/mistral-ft-optimized-1218 + mlabonne/NeuralHermes-2.5-Mistral-7B"
+  },
+  "hubs": [
+    {
+      "model": "black-forest-labs/FLUX.1-dev",
+      "children": 43421
+    },
+    {
+      "model": "Qwen/Qwen1.5-0.5B",
+      "children": 32534
+    },
+    {
+      "model": "Qwen/Qwen1.5-1.8B",
+      "children": 30627
+    },
+    {
+      "model": "google/gemma-2b",
+      "children": 24034
+    },
+    {
+      "model": "distilbert/distilbert-base-uncased",
+      "children": 13263
+    }
+  ],
+  "bridges": [
+    "Casual-Autopsy/L3-Umbral-Mind-RP-v3.0-8B",
+    "zelk12/MT5-Max-Merge_02012025163610-gemma-2-9B",
+    "Khetterman/Kosmos-8B-v1"
+  ],
+  "merge_share_nodes": 0.01625113577500191,
+  "merge_share_betweenness": 0.8255210257412305,
+  "merge_share_top100_bridges": 0.88,
+  "beta": 1.0118209650775722,
+  "age_rho": 0.07850371633073294,
+  "rate_k": [
+    1.0,
+    2.449489742783178,
+    5.291502622129181,
+    10.954451150103322,
+    22.271057451320086,
+    44.8998886412873,
+    90.15542135667715,
+    180.66543665017943,
+    361.68494577463406,
+    723.723704185513,
+    1447.8010913105431,
+    2895.955800767684,
+    5792.265187299352,
+    11584.88394417484,
+    23170.121449832757,
+    46340.59645710228
+  ],
+  "rate_r": [
+    2.3968061161782698e-06,
+    3.696260269865999e-06,
+    9.463086831205357e-06,
+    2.217948599574264e-05,
+    5.297288555114829e-05,
+    0.00012895175135672055,
+    0.00031337621143402223,
+    0.00045013792460652777,
+    0.0006822820326742806,
+    0.0017207371239353379,
+    0.0030443513397534327,
+    0.0054864592384988075,
+    0.013170292947666955,
+    0.023894133012997473,
+    0.02375340140136645,
+    0.02869131719351355
+  ],
+  "reach_without": 862654,
+  "reach_with": 1135867,
+  "reach_added": 0.3167121464689203,
+  "multi_root": 30147,
+  "max_roots": 128,
+  "coverage_k": [
+    1,
+    10,
+    100,
+    1000
+  ],
+  "coverage_pagerank": [
+    0.04635872657331375,
+    0.21255339203980944,
+    0.5210925094046416,
+    0.7822931615730165
+  ],
+  "coverage_random": [
+    1.4329871519433425e-05,
+    0.00014069810888154823,
+    0.0021474639311826497,
+    0.022842133643566208
+  ],
+  "coverage_nomerge": [
+    0.04634386596581211,
+    0.20901762892638479,
+    0.5010052139502892,
+    0.7534041405898387
+  ],
+  "merge_parents_unknown": 0.2348641975308642,
+  "pagerank_check": 1.057287590811029e-11,
+  "run_seconds": 1128.3000000000002,
+  "families": 41,
+  "run_steps": [
+    {
+      "script": "1_download.py",
+      "description": "check the pinned data snapshot",
+      "seconds": 1.5
+    },
+    {
+      "script": "2_build_edges.py",
+      "description": "build the node table and clean the edges",
+      "seconds": 2.9
+    },
+    {
+      "script": "3_build_graph.py",
+      "description": "build the lineage graph and family labels",
+      "seconds": 18.9
+    },
+    {
+      "script": "4_rq1.py",
+      "description": "RQ1 structure",
+      "seconds": 23.8
+    },
+    {
+      "script": "5_rq2.py",
+      "description": "RQ2 mixing and inbreeding",
+      "seconds": 523.7
+    },
+    {
+      "script": "6_rq3.py",
+      "description": "RQ3 hubs and bridges",
+      "seconds": 19.1
+    },
+    {
+      "script": "7_rq4.py",
+      "description": "RQ4 reach and audit coverage",
+      "seconds": 16.3
+    },
+    {
+      "script": "8_baseline.py",
+      "description": "random baselines",
+      "seconds": 522.1
+    }
+  ],
+  "inbred_tree": {
+    "merge": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP-ql-merge",
+    "a": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP",
+    "b": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP-QLORA",
+    "nodes": [
+      {
+        "id": 903608,
+        "name": "BeaverLegacy/Llama-3SOME-8B-v1",
+        "label": "Llama-3SOME-8B-v1",
+        "relation": "base model",
+        "children": 6,
+        "level": 0,
+        "order": -1.0,
+        "role": ""
+      },
+      {
+        "id": 903274,
+        "name": "Orenguteng/Llama-3-8B-Lexi-Uncensored",
+        "label": "Llama-3-8B-Lexi-Uncensored",
+        "relation": "base model",
+        "children": 315,
+        "level": 0,
+        "order": 0.0,
+        "role": ""
+      },
+      {
+        "id": 903114,
+        "name": "ResplendentAI/Aura_Llama3",
+        "label": "Aura_Llama3",
+        "relation": "base model",
+        "children": 29,
+        "level": 0,
+        "order": 1.0,
+        "role": ""
+      },
+      {
+        "id": 67804,
+        "name": "ResplendentAI/Aura_Uncensored_l3_8B",
+        "label": "Aura_Uncensored_l3_8B",
+        "relation": "finetune",
+        "children": 14,
+        "level": 1,
+        "order": 0.0,
+        "role": ""
+      },
+      {
+        "id": 75106,
+        "name": "Fischerboot/Llama3-Aura-3some-SLERP",
+        "label": "Llama3-Aura-3some-SLERP",
+        "relation": "merge",
+        "children": 1,
+        "level": 2,
+        "order": 0.0,
+        "role": ""
+      },
+      {
+        "id": 75117,
+        "name": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP",
+        "label": "LLama3-Lexi-Aura-3Some-SLERP-SLERP",
+        "relation": "merge",
+        "children": 8,
+        "level": 3,
+        "order": 0.0,
+        "role": "inbred"
+      },
+      {
+        "id": 95801,
+        "name": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP-QLORA",
+        "label": "LLama3-Lexi-Aura-3Some-SLERP-SLERP-QLORA",
+        "relation": "adapter",
+        "children": 1,
+        "level": 4,
+        "order": 0.0,
+        "role": "parent"
+      },
+      {
+        "id": 95818,
+        "name": "Fischerboot/LLama3-Lexi-Aura-3Some-SLERP-SLERP-ql-merge",
+        "label": "LLama3-Lexi-Aura-3Some-SLERP-SLERP-ql-merge",
+        "relation": "merge",
+        "children": 32,
+        "level": 5,
+        "order": 0.0,
+        "role": "merge"
+      }
+    ],
+    "edges": [
+      {
+        "child": 75106,
+        "parent": 903608,
+        "hot": false
+      },
+      {
+        "child": 75106,
+        "parent": 67804,
+        "hot": false
+      },
+      {
+        "child": 95818,
+        "parent": 75117,
+        "hot": true
+      },
+      {
+        "child": 95818,
+        "parent": 95801,
+        "hot": false
+      },
+      {
+        "child": 95801,
+        "parent": 75117,
+        "hot": true
+      },
+      {
+        "child": 67804,
+        "parent": 903114,
+        "hot": false
+      },
+      {
+        "child": 75117,
+        "parent": 75106,
+        "hot": false
+      },
+      {
+        "child": 75117,
+        "parent": 903274,
+        "hot": false
+      }
+    ],
+    "levels": 6,
+    "width": 3
+  },
+  "network_families": [
+    "gemma",
+    "llama",
+    "mistral",
+    "qwen",
+    "unknown"
+  ],
+  "image_size": {
+    "hero_network": {
+      "w": 2593,
+      "h": 1396
+    },
+    "skyline": {
+      "w": 2002,
+      "h": 1267
+    }
+  }
+}
