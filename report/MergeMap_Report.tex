@@ -1,0 +1,753 @@
+% MergeMap: A Network Analysis of Model Merging on Hugging Face
+% COMP 6917 Complex Networks, Memorial University of Newfoundland, Fall 2026
+% Compile from this folder:  pdflatex MergeMap_Report.tex  (run twice for references)
+% Figures are read from ../results/, so keep the project folder layout unchanged.
+
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cite}
+
+\graphicspath{{../results/}}
+\newcommand{\model}[1]{\texttt{\small #1}}
+
+\begin{document}
+
+\title{MergeMap: A Network Analysis of\\Model Merging on Hugging Face}
+
+\author{\normalsize Md Minhajul Abedin \texttt{mminhajula@mun.ca}\\
+COMP 6917 Complex Networks \quad $|$ \quad December 07, 2026}
+
+\maketitle
+
+\begin{abstract}
+Hugging Face lets every model declare the models it was built from. A merged
+model has two or more such parents, so its lineage is a graph and not a tree.
+We build the lineage network of 942,088 models and 929,941 ``derived from''
+links from a pinned snapshot of the public Hub metadata, and study it with the
+methods of the course: components, degree distributions, cocitation, PageRank,
+betweenness, breadth-first search, modularity, random-graph comparisons and
+network formation models. Merges join the network: the largest weakly
+connected component grows 9.6 times, from 43,660 to 418,549 models, when merge
+links are added. The number of children per model follows a power law with
+exponent 1.92, and 94 models (the top 0.01\%) hold 42.1\% of all links. Merges
+almost never mix families (2.9\% of the merges whose family is known), and 48.7\%
+of merges combine parents that already share an ancestor. Shuffled networks
+that keep every degree reach none of these values in 100 runs. Merges are only
+1.6\% of the models but carry 82.6\% of the lineage betweenness. Finally, under a
+full-inheritance assumption, merges add 31.7\% to the number of models that a
+flaw in a base model could reach, and the top 100 models by PageRank cover
+52.1\% of all exposure, against 0.2\% for 100 random models with a child.
+\end{abstract}
+
+\begin{IEEEkeywords}
+complex networks, model merging, Hugging Face, lineage graph, power law,
+PageRank, betweenness, modularity, preferential attachment
+\end{IEEEkeywords}
+
+% ---------------------------------------------------------------------------
+\section{Introduction}
+
+Open model hubs work like supply chains. A team fine-tunes a base model,
+another team quantizes it, a third merges it with two other models, and the
+result is fine-tuned again. Model merging combines the weights of several
+trained models without further training. It is cheap and popular, so many
+recent models have several parents. Each Hugging Face model card can declare
+its parents and the relation to them (fine-tune, adapter, quantization or
+merge). Laufer et al.\ \cite{laufer2025} studied these declarations as family
+trees. A merge breaks the tree: it has more than one parent, and it can connect
+lineages that were separate. This project asks what merges do to the network
+as a whole.
+
+We follow the six-step workflow of the course: data set, graph model, metrics,
+algorithms, knowledge and understanding. The project answers four research
+questions.
+
+\textbf{RQ1.} How much do merges connect separate model families?
+
+\textbf{RQ2.} Who merges with whom, and how often do close relatives merge?
+
+\textbf{RQ3.} Which models act as bridges or hubs?
+
+\textbf{RQ4.} How many models inherit a flawed base model, and how much do
+merges add?
+
+We also added a short network-formation study (Topic~5-5): does the network
+grow by preferential attachment, and do merges copy earlier merges?
+
+All metrics and algorithms come from the lecture topics, with two exceptions
+that the submitted proposal promised: family assortativity and
+degree-preserving random graphs. Both are taken from Newman \cite{newman2010}.
+Table~\ref{tab:methods} lists every method and its source.
+
+% ---------------------------------------------------------------------------
+\section{Related Work}
+
+Laufer, Oderinwale and Kleinberg \cite{laufer2025} built the family trees of
+Hugging Face models from the same \texttt{baseModels} field and studied how
+traits change from parent to child. They treat lineage as trees and do not
+study merges as network links. Horwitz et al.\ \cite{horwitz2025} propose charting
+the Hub as a model atlas: a directed graph of models linked by the weight
+transformations between them. Wei et al.\
+\cite{wei2026} study which models are disruptive in the open-source LLM
+community. Our work differs in two ways: it treats merges as the links that
+join lineages, and it uses classic network baselines (random graphs and
+degree-preserving shuffles) to test whether the patterns are more than an
+effect of the degrees. The network models we use are those of Price
+\cite{price1976}, Barab\'asi and Albert \cite{barabasi1999} and the textbooks
+\cite{barabasi2016,newman2010}.
+
+% ---------------------------------------------------------------------------
+\section{Step 1: Data Set}
+
+The source is the \texttt{models.parquet} file of the public data set
+\texttt{cfahlgren1/hub-stats} (Apache-2.0), which holds the metadata of every
+public model on the Hub. We pinned one snapshot: commit
+\texttt{1a8f69d}, uploaded on 22~October~2026, 1.64~GB, with its SHA-256 hash
+stored in the project. Each row has the model id, author, creation time and
+the \texttt{baseModels} field, which gives the relation and the list of
+declared parents. There are four relations: \emph{fine-tune} (the weights are
+trained further), \emph{adapter} (a small set of added weights, such as LoRA,
+trained on a frozen base), \emph{quantized} (the same weights stored at lower
+precision) and \emph{merge} (the weights of several parents are combined).
+The Hub back-fills the creation time of all models made before 2~March~2022 to
+that one date, so time-based results use only the models created after it.
+
+Table~\ref{tab:cleaning} shows the cleaning steps. The file has 3,177,876 rows;
+13 duplicate ids were removed. Of the 3,177,863 models, 902,519 declare at least
+one parent. We removed self-loops and links to a parent created after the
+child (these are mistakes or later re-uploads). We kept the 14,006 links to
+3,431 parents that are no longer public, as ``ghost'' nodes, because removing
+them would cut real lineages. No model declares two parents unless the relation
+is ``merge''. Of the 15,310 models that declare a merge, 264 have fewer than two
+parents in the clean graph; as planned in the proposal, they count for reach (RQ4)
+but not for the mixing and inbreeding results, which use the 15,046 merges with
+two or more parents.
+
+\begin{table}[t]
+\caption{Data cleaning of the declared parent links.}
+\label{tab:cleaning}
+\centering
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Step & Count \\
+\midrule
+Rows in the snapshot & 3,177,876 \\
+Models after removing duplicate ids & 3,177,863 \\
+Models that declare a parent & 902,519 \\
+Raw child $\to$ parent links & 935,443 \\
+\quad removed: self-loops & 2,072 \\
+\quad removed: parent newer than child & 3,430 \\
+\quad kept: links to 3,431 ghost parents & 14,006 \\
+Clean links & \textbf{929,941} \\
+\quad fine-tune / adapter & 358,180 / 332,026 \\
+\quad quantized / merge & 191,705 / 48,030 \\
+Nodes (models with a link, incl.\ ghosts) & 942,088 \\
+Merge models (2+ parents) & 15,046 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Check against earlier work.} Laufer et al.\ \cite{laufer2025} count
+191,072 fine-tune links in their snapshot of 1.86 million models. Cut at the
+date when our snapshot reaches 1.86 million models (22~August~2025), our graph
+has 191,155 (a 0.04\% difference; the cut is approximate because deleted models
+are missing from our snapshot). We also find the same most-derived model
+(\model{FLUX.1-dev}), and a maximum depth of 39 when each merge keeps only its
+first-listed parent, against their ``nearly 40 generations'' under the same
+rule. This tells us the pipeline reads the field correctly.
+
+% ---------------------------------------------------------------------------
+\section{Step 2: Graph Model}
+
+\textbf{Lineage graph.} Each model is a node. Each declared parent gives a
+directed edge \emph{child $\to$ parent}, read as ``is derived from''. With this
+direction the in-degree of a model is its number of children, which is the
+measure of influence used in RQ1 and RQ3. The proposal drew edges the other
+way; we changed it so that in-degree, PageRank and the citation analogy of the
+lectures (a child ``cites'' its parent) all point the same way. A child must be
+newer than its parent, so the graph should be a directed acyclic graph (DAG).
+We checked this with our own Kahn topological sort (Topic~2): every node was
+ordered, so there is no cycle.
+
+We compare two graphs: $G_{\text{full}}$ with all edges, and
+$G_{\text{nomerge}}$ in which every merge model keeps no parent links. The
+difference between the two is the effect of merges.
+
+\textbf{Families.} A root is a model with no parent. We gave each root a family
+from a fixed list of 41 name patterns (e.g.\ \texttt{llama}, \texttt{qwen},
+\texttt{mistral}, \texttt{gemma}, \texttt{flux}), written before any result was
+computed, and labelled the rest \emph{unknown}. A non-root model takes the
+family of its roots, or \emph{mixed} if its roots belong to different named
+families. 21,165 of the 44,867 roots get a named family, and 85.3\% of the
+non-root models get a named family or \emph{mixed}. The remaining 14.7\%, and
+23.5\% of all merge parents, are unknown, so every family result below is
+computed on labelled models and stated as such. The largest labels among
+non-root models are Qwen (249,015), Llama (104,203), Gemma (85,641), BERT
+(54,887), FLUX (46,217) and Mistral (44,174); only 279 models are \emph{mixed}.
+
+\textbf{Cocitation network.} For RQ2 and RQ3 we project the merges onto their
+parents. Two models are linked if they are parents of the same merge, and the
+weight is the number of merges they share. This is the cocitation matrix
+$C = A^{\mathsf T}A$ restricted to merge rows (Topic~2). It has 10,125 nodes,
+47,300 links, total weight 112,141 and mean degree 9.34. The heaviest link joins
+\model{Mistral-7B-Instruct-v0.2} and \model{Mistral-7B-v0.1} (247 merges).
+
+% ---------------------------------------------------------------------------
+\section{Steps 3 and 4: Metrics and Algorithms}
+
+Table~\ref{tab:methods} maps each question to its method and lecture topic.
+We wrote our own code for the methods that are central to the questions
+(topological sort, depth, PageRank, inbreeding search, copying, the attachment
+rate and the two merge shuffles), and used python-igraph \cite{igraph} for
+components, betweenness, clustering and the rewiring of the cocitation network. Communities come from the Leiden algorithm
+\cite{traag2019} in the \texttt{leidenalg} package.
+
+\begin{table}[t]
+\caption{Metrics and algorithms, with their source.}
+\label{tab:methods}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}p{0.9cm}p{4.6cm}p{2.1cm}@{}}
+\toprule
+RQ & Method & Source \\
+\midrule
+1 & DAG check by topological sort; depth & Topic 2 \\
+1 & Weakly connected components, giant component & Topics 2, 4 \\
+1 & Children distribution: log binning, cumulative slope, top-heavy share & Topic 4 \\
+2 & Cocitation network $A^{\mathsf T}A$ & Topic 2 \\
+2 & Modularity $Q$ with families as groups & Topic 5-3 \\
+2 & Family assortativity $r$ & Newman \cite{newman2010} \\
+2 & Clustering, giant component, path length vs.\ $G(n,m)$ & Topic 5-4 \\
+2 & Inbreeding search (BFS up to depth 3) & Topic 5 \\
+3 & PageRank, solved on the DAG & Topic 3 \\
+3 & Betweenness (exact, directed and on cocitation) & Topic 5 \\
+3 & Community detection (Leiden) & Topic 5-3 \\
+4 & Reach by BFS; hub vs.\ random removal & Topics 4, 5 \\
+Ext. & Attachment rate $R(k)$, Price's model, copying & Topic 5-5 \\
+All & Degree-preserving shuffles & Newman \cite{newman2010} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Power law.} Following Topic~4, the children distribution is shown with
+logarithmic bins, and the exponent $\alpha$ is taken from the slope of the
+cumulative distribution $P(K\ge k)\sim k^{-(\alpha-1)}$ on log-log axes. A
+maximum-likelihood fit (\texttt{powerlaw} package) is reported only as a
+cross-check.
+
+\textbf{PageRank.} Eigenvector centrality is zero for every node of a DAG
+(Topic~3), so we use PageRank $x = \alpha A D^{-1}x + \beta\mathbf{1}$ with
+$\alpha=0.85$: a model passes 85\% of its score to its parents, split equally.
+In a DAG this system can be solved exactly in one pass, by handling models from
+the deepest to the shallowest, since a child is always deeper than its parents.
+The result matches the matrix inverse $(I-\alpha AD^{-1})^{-1}\beta\mathbf{1}$
+(our Assignment~3 code) to $1.1\times10^{-11}$ on a 986-node test piece, and is
+proportional to igraph's PageRank to within $7.5\times10^{-13}$.
+
+\textbf{Inbreeding.} Two parents of a merge are \emph{related within $d$} if
+their sets of ancestors within $d$ generations (each including the model
+itself) overlap. A breadth-first search up the graph (Topic~5) finds these sets.
+A pair is of \emph{ancestor} type if one parent is an ancestor of the other, and
+of \emph{common-ancestor} type otherwise (siblings, cousins). A merge is
+inbred within $d$ if any pair of its parents is related within $d$. We fixed
+this definition before computing any result.
+
+\textbf{Assortativity.} For family labels, $Q=\sum_i(e_{ii}-a_i^2)$ is the
+modularity of Topic~5-3 with families as groups, and the assortativity
+coefficient is $r = Q/(1-\sum_i a_i^2)$ \cite[eq.~7.80]{newman2010}, so $r=1$
+means that links only join models of the same family.
+
+\textbf{Baselines.} A pattern only matters if it is stronger than what the
+degrees alone produce. We use three degree-preserving shuffles \cite{newman2010},
+each run 100 times with seed 6917 and ten swap attempts per edge:
+(A) swap parents between merge links, keeping every merge's number of parents
+and every parent's number of merge children, and rejecting swaps that create a
+duplicate parent or a cycle; (A2) the same, but swaps only inside a family, so
+that family membership is kept as well; (B) igraph's \texttt{rewire} on the
+cocitation network. We report the baseline mean, standard deviation and
+$z$-score.
+
+\textbf{Network formation.} We replay all 929,941 links in the order the
+children were created. For a model with $k$ children, the attachment rate
+$R(k)$ is the number of new links that went to models with $k$ children,
+divided by the number of such models at the time. Linear preferential
+attachment predicts $R(k)\propto k$ (Topic~5-5). For copying, each merge is
+compared with every earlier merge that shares at least two parents; it
+\emph{copies} if the best Jaccard similarity of the two parent sets is at
+least 0.5, and \emph{repeats} a recipe if the sets are equal.
+
+\textbf{Reproducibility.} All row orders, ties and seeds are fixed, and the best
+of 20 Leiden runs is kept. Two full runs from scratch gave identical output
+files. A full run takes about 14 to 19 minutes on a laptop.
+
+\textbf{Changes from the proposal.} (1)~Edges point child~$\to$~parent.
+(2)~Families come from a fixed list with an \emph{unknown} label. (3)~Ghost
+parents are kept. (4)~The power law is fitted on the number of children only.
+(5)~Path lengths are measured on the cocitation network, where they have a
+meaning, and lineage depth replaces them on the DAG. (6)~Betweenness is exact
+and directed. (7)~The within-family shuffle (A2) was added. (8)~RQ4 is framed as
+a hypothetical flaw with full inheritance. (9)~The network-formation study was
+added after the Topic~5-5 lecture.
+
+% ---------------------------------------------------------------------------
+\section{Step 5: Knowledge Discovered}
+
+\subsection{RQ1: Merges join the network into one giant component}
+
+Without merges the network is a forest of separate families: 60,177 weakly
+connected components, the largest with 43,660 models. Adding the 48,030 merge
+links reduces the count to 41,637 and grows the largest component 9.6 times, to
+418,549 models (44.4\% of all nodes), which holds 2,448 roots from 28 named
+families (Fig.~\ref{fig:components}). The next components are much smaller
+(63,232, 25,428, 21,870 and 13,644). Without merges, each of the five largest
+components is the tree of a single root: \model{FLUX.1-dev} (43,660 models),
+\model{Qwen1.5-0.5B}, \model{Qwen1.5-1.8B}, \model{gemma-2b} and
+\model{Qwen2.5-7B}. With merges, 12 components contain two or more named
+families; without merges, none does. Merges are 5.2\% of the links, but they
+are the links that connect families. This is the giant-component effect of
+Topic~5-4: a small number of links between groups joins the groups.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{rq1_component_sizes.png}
+\caption{Component sizes with and without merge links. Merges grow the largest
+component from 43,660 to 418,549 models.}
+\label{fig:components}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{rq1_children_distribution.png}
+\caption{Children per model. Left: log-binned distribution. Right: cumulative
+distribution with the fitted slope ($\alpha=1.92$ for $10\le k\le 7{,}291$).}
+\label{fig:children}
+\end{figure}
+
+\textbf{Hubs.} Only 87,535 models (9.3\%) have a child, and the mean number
+of children is 0.99. The distribution of
+children is heavy-tailed, with a cumulative-slope exponent $\alpha=1.92$ for
+$10\le k\le 7{,}291$ (maximum-likelihood cross-check: 1.86). An exponent below 2
+means the mean is dominated by the largest hubs \cite{barabasi2016}. The share
+is extreme: the top 94 models (0.01\%) hold 42.1\% of all links, the top 0.1\%
+hold 69.0\%, the top 1\% hold 84.8\% and the top 5\% hold 95.7\%. Even among the models that have a
+child, the top 1\% (875 models) hold 68.3\% of the links (Fig.~\ref{fig:children}). The largest hub,
+\model{FLUX.1-dev}, has 43,421 children. The relations differ: fine-tunes and
+adapters have $\alpha\approx1.9$, quantizations 2.20 and merges 2.60, so merge
+parents are the least concentrated: the largest merge parent has 412 merge
+children, against 42,702 adapter children for the largest adapter parent.
+
+\textbf{Depth.} The mean depth of non-root models is 1.62 in $G_{\text{full}}$ against 1.39 in
+$G_{\text{nomerge}}$, and the maximum is 151 against 39. 6,917 models lie at
+depth 10 or more, against 185 without merges. Most models are direct
+children of a root (70.5\% at depth 1, against 73.3\% without merges), but the
+share at depth 5 or more more than doubles, from 1.3\% to 2.9\%. Merges are on
+average 6.4 steps from a root (median 3): they are built on top of other
+merges, which gives long chains. A merge has 3.17 parents on average and up to
+97.
+
+\subsection{RQ2: Merges stay inside families and inside close relatives}
+
+\textbf{Family mixing.} 85.5\% of merges combine parents from different roots,
+so merges do join lineages. But they almost never join families. Among merges
+whose parents' families are known, 45.5\% are same-family and 1.3\% are
+cross-family; the remaining 53.1\% involve an unknown parent. Counting only
+determined merges, 2.9\% are cross-family. The most common cross-family pairs
+are Llama with Mistral (82 merges), Gemma with Qwen (12) and Gemma with Llama
+(7). Llama and Mistral models use closely related architectures, which makes
+their weights easier to combine; most other family pairs are almost never
+merged. In the cocitation network the family
+assortativity is $r=0.743$ with all labels and 0.988 among named families, with
+modularity $Q=0.561$ and $0.678$ (Fig.~\ref{fig:family}). 80.6\% of the
+cocitation weight joins two models with the same label.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{rq2_family_matrix.png}
+\caption{Cocitation weight between families. Almost all weight lies on the
+diagonal: merges combine models of the same family.}
+\label{fig:family}
+\end{figure}
+
+\textbf{Structure against $G(n,m)$.} A random graph with the same $n$ and $m$
+has clustering $c/(n-1)=0.0009$; the cocitation network has 0.581, about 630
+times more. Its giant component holds 61.7\% of the nodes against 99.99\% expected, and
+its mean path length is 6.39 against 4.13 from $\ln n/\ln c$ (4.38 measured on
+sampled $G(n,m)$ graphs). The network is clustered into tight groups that are
+connected by few links, which is the opposite of a random graph.
+
+\textbf{Inbreeding.} 32.6\% of merges have two parents within one generation of
+each other (parent and child, or siblings), 45.9\% within three, and 48.7\%
+share some ancestor (Fig.~\ref{fig:baseline}). The two types contribute about
+equally (22.8\% ancestor type, 25.9\% common-ancestor type at any depth): a
+model is often merged with its own parent. A few prolific authors could inflate
+this, so we kept one merge per author and parent set (10,993 merges by 1,840
+authors; the ten most active authors made 32.5\% of them). Inbreeding then rises to 35.1\% within one generation and 53.8\% at any
+depth, so it is not caused by a few authors repeating themselves; the family
+assortativity is also almost unchanged (0.734 against 0.743).
+
+\begin{table}[t]
+\caption{Share of inbred merges by depth $d$, split by type, against the two
+shuffles (totals; mean of 100 runs).}
+\label{tab:inbreeding}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+ & \multicolumn{3}{c}{Observed} & \multicolumn{2}{c}{Shuffled total} \\
+\cmidrule(lr){2-4}\cmidrule(l){5-6}
+$d$ & Total & Ancestor & Common & A & A2 \\
+\midrule
+1   & 32.6\% & 19.1\% & 13.5\% & 5.3\%  & 16.3\% \\
+2   & 42.0\% & 21.4\% & 20.6\% & 10.6\% & 25.4\% \\
+3   & 45.9\% & 22.2\% & 23.7\% & 13.8\% & 29.9\% \\
+any & 48.7\% & 22.8\% & 25.9\% & 16.6\% & 34.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Which kind of relative?} Table~\ref{tab:inbreeding} splits the result
+by type. The ancestor type is the stronger signal: within one generation,
+19.1\% of merges combine a model with its own parent, against 2.6\% in shuffle A
+and 8.9\% in A2. The common-ancestor type at any depth is 25.9\% against 20.7\%
+in A2 ($z=12.7$), the smallest gap in the study. Distant cousins are common
+inside a family anyway; what merges add is a strong preference for a model
+and its direct ancestor.
+
+\textbf{Against the baselines.} Table~\ref{tab:baseline} shows that no shuffle
+comes near the observed values. Shuffle A accepted 30.9\% of swap attempts and
+changed 94.3\% of the merge links; A2 accepted 7.7\% and changed 64.3\%. Across
+the 100 runs of each, no run reached any observed value; the $z$-scores of the
+measures in Table~\ref{tab:baseline} range from 30 to 1,584. The within-family shuffle A2 matters most: it keeps both
+the degrees and the families, and still gives half the observed inbreeding
+(16.3\% vs.\ 32.6\%). So merges are not only same-family; they choose close
+relatives inside a family.
+
+\begin{table}[t]
+\caption{Observed values against degree-preserving shuffles
+(mean of 100 runs; no run reached the observed value).}
+\label{tab:baseline}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Measure & Observed & Shuffled (A) & In family (A2) \\
+\midrule
+Inbred within 1 & 32.6\% & 5.3\% & 16.3\% ($z{=}66$) \\
+Inbred, any depth & 48.7\% & 16.6\% & 34.2\% ($z{=}30$) \\
+Copies earlier merge & 48.8\% & 3.9\% & 12.1\% \\
+Exact repeat & 34.4\% & 1.2\% & 4.9\% \\
+Assortativity $r$ (all, unweighted) & 0.751 & 0.046 & -- \\
+\midrule
+ & & Rewired (B) & \\
+\midrule
+Assortativity $r$ (all, unweighted) & 0.751 & $-0.002$ & \\
+Assortativity $r$ (named, unweighted) & 0.979 & $-0.004$ & \\
+Clustering & 0.581 & 0.023 & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{baseline_inbreeding.png}
+\caption{Share of inbred merges by depth, observed and in the two shuffles.
+The within-family shuffle keeps degrees and families, yet stays far below the
+observed values.}
+\label{fig:baseline}
+\end{figure}
+
+\subsection{RQ3: Hubs are roots; bridges are merges}
+
+\textbf{Hubs.} The models with the most children are base models released by
+large labs: \model{FLUX.1-dev} (43,421), \model{Qwen1.5-0.5B} (32,534),
+\model{Qwen1.5-1.8B} (30,627), \model{gemma-2b} (24,034) and
+\model{distilbert-base-uncased} (13,263). PageRank agrees with the number of
+children (Spearman 0.938 among models with a child; 13 of the top 20 are shared), and 16 of the top 20 by
+PageRank are roots. PageRank adds models whose children have many descendants,
+e.g.\ instruction-tuned bases that are fine-tuned again. The top 20 models hold
+24.5\% of all PageRank, and the top 100 are mostly Qwen (37), Llama (15) and
+Gemma (14) models.
+
+\textbf{Bridges.} Betweenness tells a different story. Only 42,468 models
+have positive betweenness, since a model needs both descendants and ancestors
+to lie on a path; merges are 20.4\% of them. Merges are 1.6\% of all
+nodes but carry 82.6\% of all directed betweenness, and 85\% of the top 20, 88\%
+of the top 100 and 86.9\% of the top 1,000 models by betweenness are merges
+(Fig.~\ref{fig:between}). The
+top bridge is \model{L3-Umbral-Mind-RP-v3.0-8B}, a Llama merge with 18 parents.
+Part of this is built in, since a merge lies on paths to several parents, but
+the size of the effect shows that the paths between lineages run through a
+small set of community merges and not through the base models. In the
+cocitation network the bridges are base models that are merged across
+families: \model{Mistral-Nemo-Instruct-2407} (cocited with 246 models from five
+families), \model{Llama-3.1-8B}, \model{Qwen2.5-7B-Instruct} and
+\model{Mistral-7B-v0.1}; 54 of the top 100 have neighbours in two or more
+families. By family, the top 100 cocitation bridges are Llama (35), Qwen (22),
+unknown (19) and Mistral (15) models.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{rq3_lineage_betweenness.png}
+\caption{Top 15 models by directed betweenness in the lineage graph. Twelve of
+them are merges.}
+\label{fig:between}
+\end{figure}
+
+\textbf{Communities.} Leiden finds 1,204 communities (range 1,202--1,206 over
+20 runs), 82 of them with at least ten members (range 79--83). Their
+modularity is $Q=0.890$ (range 0.888--0.890),
+much higher than the 0.561 of the family labels, so the families are too coarse.
+The communities are 96.2\% pure in family (range 95.5--96.4\%): Leiden splits
+families into sub-lineages but almost never mixes them. It also places unknown
+models: 46.0\% of the unknown models (range 44.3--53.2\%) sit in a community
+whose labelled members share one family, so their family can be inferred from
+the links.
+
+\subsection{RQ4: A flaw in a base model reaches far, but a small audit covers it}
+
+We assume a hypothetical flaw (e.g.\ a backdoor or a licence problem) in a root
+model that is passed to every descendant. This is an upper bound, since a merge
+or fine-tune may remove a flaw. The reach of a root is the number of models
+found by BFS along reversed edges.
+
+Merges raise the total number of root--descendant pairs from 862,654 to
+1,135,867 (+31.7\%). 3,591 roots gain reach, and the number of roots that reach
+1,000 or more models rises from 121 to 198. The gain is uneven:
+\model{Mistral-Nemo-Instruct-2407} grows by 221.5\% (1,134 to 3,646),
+\model{gemma-2-9b-it} by 84.5\%, \model{Llama-3.1-70B} by 78.1\%,
+\model{Meta-Llama-3-8B-Instruct} by 60.8\% (3,688 to 5,932) and
+\model{Mistral-7B-v0.1} by 26.6\% (9,119 to 11,548), while \model{FLUX.1-dev}
+gains almost nothing (43,659 to 43,673), because its descendants are rarely
+merged. The median root still reaches only two models, so the
+exposure is concentrated in a few lineages. 30,147 models (3.4\% of non-roots)
+descend from two or more roots, 6,467 from ten or more, and one from 128 roots;
+279 of them inherit from two or more named families.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{rq4_audit_coverage.png}
+\caption{Share of all exposure covered by auditing the top-$k$ models, by
+PageRank, children and reach, against random models.}
+\label{fig:audit}
+\end{figure}
+
+\textbf{Audit coverage.} Topic~4 contrasts hub failure with random failure. We
+ask how much of the total exposure is covered by auditing $k$ models
+(Fig.~\ref{fig:audit}). The top model by PageRank covers 4.6\%, the top 10 cover
+21.3\%, the top 100 cover 52.1\% and the top 1,000 cover 78.2\%. Ranking by
+children gives almost the same result (78.1\% at 1,000), and ranking by reach is
+worse at large $k$ (69.1\%) because high-reach models overlap: a merge and
+its parents reach many of the same models. Without merges, the same reach
+ranking covers 75.3\% at 1,000, so merges make greedy auditing by reach less
+efficient. Random models
+with a child cover 0.21\% at $k=100$ and 2.28\% at $k=1{,}000$; random models of
+any kind cover 0.44\% at 1,000. The network is fragile to its hubs and robust to
+random failure, exactly as a heavy-tailed network should be.
+
+\subsection{Network formation (Topic 5-5)}
+
+\textbf{Preferential attachment.} Replaying the links in creation order, the
+attachment rate grows almost linearly with the number of children already held:
+$R(k)\propto k^{\beta}$ with $\beta=1.01$ for $1\le k<4{,}096$
+(Fig.~\ref{fig:growth}). This is the rich-get-richer rule of Price's model and
+the Barab\'asi--Albert model \cite{price1976,barabasi1999}. Two observations
+qualify it. First, models in the largest bin of $k$ receive only 0.26 of the fitted rate, so
+attachment saturates at the top. Second, Price's model predicts
+$\alpha = 2 + a/c \ge 2$ with $c=1.036$ parents per new model, while we measure
+1.92, slightly below the bound. Age explains little: the Spearman correlation
+between age and children is 0.046 (0.079 among models with a child), and the 754
+models with 100 or more children gained a median of only 14.6\% of their
+children in their first 90 days. So the early-mover advantage of Price's model
+is weak; new strong base models overtake old ones. This points to a fitness
+effect, i.e.\ some models are simply more useful, which the lectures mention as
+the main extension of preferential attachment. Creation times before
+March~2022 share one placeholder date on the Hub, so the age analysis uses the
+dated models only.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{rq1_growth.png}
+\caption{Network formation. Left: attachment rate $R(k)$ against the number of
+children already held, with the fitted slope $\beta=1.01$ and the linear
+reference. Right: median and 90th-percentile number of children by model age.}
+\label{fig:growth}
+\end{figure*}
+
+\textbf{Vertex copying.} Merges copy each other. 48.8\% of merges have a parent
+set with Jaccard similarity of at least 0.5 to an earlier merge, and 34.4\%
+repeat an earlier parent set exactly (56.5\% share at least two parents with
+some earlier merge); the shuffles give 3.9\% and 1.2\% (12.1\%
+and 4.9\% within families). Most copying is an author repeating a recipe
+(68.6\% of copies), but 15.3\% of all merges copy another author. 1,847 parent
+sets are reused, covering 7,022 merges. The most copied recipe across authors,
+\model{mistral-ft-optimized-1218} with \model{NeuralHermes-2.5-Mistral-7B}, was
+used in 143 merges by 127 authors. The single largest recipe was used 223
+times by one author, and the third, two image-generation checkpoints
+(\model{noobai-XL-1.1} with \model{Illustrious-XL-v2.0}), was used 102 times by
+three authors, so copying is not limited to language models. This is the copying mechanism of Topic~5-5,
+and it explains both the clustering of the cocitation network and part of the
+inbreeding.
+
+% ---------------------------------------------------------------------------
+\section{Step 6: Understanding}
+
+\textbf{What merges do.} The results fit one picture. The Hub grows by
+preferential attachment around a few base models from large labs, which gives
+the heavy tail of RQ1 and the hubs of RQ3. Merges then add a second layer: they
+are made by the community, they copy earlier recipes, and they combine close
+relatives inside one family. Because each merge has several parents, this
+second layer is what joins lineages into one giant component, what carries the
+paths between lineages (82.6\% of the betweenness), and what adds a third to the
+reach of a flaw. Yet merges almost never cross families, so the network is one
+component made of family-pure communities, held together by few cross-family
+links. The degree-preserving shuffles show that none of this follows from the
+degrees alone.
+
+\textbf{Implications.} For supply-chain risk, the audit result is the practical
+one: checking the top 100 models by PageRank covers half of all exposure, which
+is about 240 times more than checking 100 random models with a child. Merges should be
+part of any audit, because some roots (e.g.\ \model{Mistral-Nemo-Instruct-2407})
+reach 3.2 times more models once merges are counted. For
+studies of merging, the high inbreeding means that many merges combine closely
+related weights; comparisons of merge methods should control for parent
+relatedness. Leiden communities can fill in missing family labels for about
+half of the unknown models.
+
+% ---------------------------------------------------------------------------
+\section{Limitations and Future Scope}
+
+\subsection{Limitations}
+
+\textbf{Self-declared lineage.} All links come from what authors write in the
+model card. A model that does not declare its parent becomes a root even if it
+was derived, so every count in this report is a lower bound, and the true
+network is likely more connected than the one we measure.
+
+\textbf{Family labels.} The 41 patterns are a modelling choice. 23.5\% of merge
+parents and 14.7\% of non-root models stay unknown, so family mixing is
+measured on determined merges only. The labels are also sensitive: two patterns
+(\texttt{bert} matching ``cybertron'' and \texttt{nemotron} labelling Llama
+fine-tunes) were corrected after the first run, which changed the cross-family
+count from 433 to 203.
+
+\textbf{Full inheritance.} RQ4 assumes that every descendant inherits a flaw.
+This is an upper bound: a fine-tune or a merge can weaken or remove a flaw, and
+a quantized copy may keep it exactly. The audit ranking is still useful, but
+the exposure numbers are not predictions.
+
+\textbf{One snapshot.} Growth is replayed from creation times, not observed
+over time. Deleted models are missing except as ghost parents, and models made
+before March~2022 share one placeholder date, so the age analysis covers only
+later models.
+
+\textbf{Built-in effects.} Some patterns are partly caused by construction. A
+merge lies on paths to all its parents, which raises its betweenness, and a
+merge with many parents creates a clique in the cocitation network, which
+raises clustering. The degree-preserving shuffles control for degrees but not
+for these effects, so we report them as upper bounds on the true signal.
+
+\textbf{Causes of growth.} The attachment rate cannot separate preferential
+attachment from fitness, because a useful model both gains children and has
+many children.
+
+\textbf{Methods outside the lectures.} We used assortativity and
+degree-preserving shuffles (from Newman \cite{newman2010}, as the proposal
+promised), and simple statistics to report them: Spearman rank correlation,
+Jaccard similarity and $z$-scores.
+
+\subsection{Future Scope}
+
+\textbf{Time-resolved network.} The source data set is updated daily. A series
+of snapshots would let us observe growth directly, measure the attachment rate
+without replaying creation times, and test a fitness model of growth
+\cite{barabasi2016} against pure preferential attachment.
+
+\textbf{Recovering hidden links.} Undeclared parents could be recovered from the
+weights themselves, as proposed for the model atlas \cite{horwitz2025}. This
+would reduce the number of false roots and unknown families, and show how much
+the lower bounds underestimate.
+
+\textbf{Partial inheritance.} RQ4 could weight each link by how much of a
+parent survives: for example, full weight for a quantized copy and a smaller
+weight for a fine-tune or for one parent of a merge. The audit question then
+becomes a weighted reach problem on the same DAG.
+
+\textbf{Node attributes.} Adding downloads, likes and licences to the nodes
+would show whether the hubs by structure are also the most used models, and
+whether merges combine parents with incompatible licences, a real case of the
+supply-chain risk studied here.
+
+\textbf{Other layers.} Models also link to the data sets they were trained on.
+A bipartite model--data set network (Topic~2) would extend the lineage graph
+and show whether merged models also share training data.
+
+% ---------------------------------------------------------------------------
+\section{Conclusion}
+
+We built the lineage network of 942,088 Hugging Face models and studied what
+merges do to it. Merges are 5.2\% of the links but join the network into one
+giant component, carry most of the betweenness and add 31.7\% to the reach of a
+hypothetical flaw. They combine models of the same family (assortativity 0.99
+among named families) and often of the same close lineage (48.7\% inbred), and
+they copy earlier recipes; random shuffles that keep the degrees reproduce none
+of this. The network grows by near-linear preferential attachment, but age
+matters little, so model fitness is the most likely driver. The code, the
+cleaned data and all metric outputs are in the project archive, and a single
+command reproduces every number in this report.
+
+% ---------------------------------------------------------------------------
+\begin{thebibliography}{10}
+
+\bibitem{laufer2025}
+B.~Laufer, H.~Oderinwale, and J.~Kleinberg, ``Anatomy of a machine learning
+ecosystem: 2 million models on Hugging Face,'' 2025, \emph{arXiv:2508.06811}.
+
+\bibitem{horwitz2025}
+E.~Horwitz, N.~Kurer, J.~Kahana, L.~Amar, and Y.~Hoshen, ``We should chart an
+atlas of all the world's models,'' 2025, \emph{arXiv:2503.10633}.
+
+\bibitem{wei2026}
+X.~Wei, L.~Kang, X.~Pan, and J.~Yang, ``Identifying disruptive models in the
+open-source LLM community,'' 2026, \emph{arXiv:2604.11618}.
+
+\bibitem{barabasi2016}
+A.-L.~Barab\'asi, \emph{Network Science}. Cambridge, U.K.: Cambridge Univ.\
+Press, 2016.
+
+\bibitem{newman2010}
+M.~E.~J.~Newman, \emph{Networks: An Introduction}. Oxford, U.K.: Oxford Univ.\
+Press, 2010.
+
+\bibitem{price1976}
+D.~J.~de~Solla~Price, ``A general theory of bibliometric and other cumulative
+advantage processes,'' \emph{J. Amer. Soc. Inf. Sci.}, vol.~27, no.~5,
+pp.~292--306, Sep.\ 1976.
+
+\bibitem{barabasi1999}
+A.-L.~Barab\'asi and R.~Albert, ``Emergence of scaling in random networks,''
+\emph{Science}, vol.~286, no.~5439, pp.~509--512, Oct.\ 1999.
+
+\bibitem{traag2019}
+V.~A.~Traag, L.~Waltman, and N.~J.~van~Eck, ``From Louvain to Leiden:
+guaranteeing well-connected communities,'' \emph{Sci. Rep.}, vol.~9, no.~1, Art.~no.~5233,
+Mar.\ 2019.
+
+\bibitem{igraph}
+G.~Cs\'ardi and T.~Nepusz, ``The igraph software package for complex network
+research,'' \emph{InterJournal, Complex Systems}, no.~1695, 2006.
+
+\end{thebibliography}
+
+\end{document}
